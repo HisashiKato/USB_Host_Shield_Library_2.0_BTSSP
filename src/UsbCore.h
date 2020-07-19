@@ -45,7 +45,6 @@ typedef MAX3421e<P15, P5> MAX3421E; // ESP8266 boards
 typedef MAX3421e<P5, P17> MAX3421E; // ESP32 boards
 #else
 typedef MAX3421e<P10, P9> MAX3421E; // Official Arduinos (UNO, Duemilanove, Mega, 2560, Leonardo, Due etc.), Intel Edison, Intel Galileo 2 or Teensy 2.0 and 3.x
-//typedef MAX3421e<P2, P4> MAX3421E; // Official Arduinos (UNO, Duemilanove, Mega, 2560, Leonardo, Due etc.), Intel Edison, Intel Galileo 2 or Teensy 2.0 and 3.x
 #endif
 
 /* Common setup data constant combinations  */
