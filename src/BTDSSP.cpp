@@ -413,7 +413,7 @@ void BTDSSP::HCI_event_task() {
                                                 D_PrintHex<uint8_t > (classOfDevice[0], 0x80);
 #endif
 
-												if(pairWithHIDDevice && (classOfDevice[1] & 0x05) && (classOfDevice[0] & 0xCC)) { // Check if it is a mouse, keyboard, gamepad or joystick - see: http://bluetooth-pentest.narod.ru/software/bluetooth_class_of_device-service_generator.html
+                                                if(pairWithHIDDevice && (classOfDevice[1] & 0x05) && (classOfDevice[0] & 0xCC)) { // Check if it is a mouse, keyboard, gamepad or joystick - see: http://bluetooth-pentest.narod.ru/software/bluetooth_class_of_device-service_generator.html
 #ifdef DEBUG_USB_HOST
                                                         if(classOfDevice[0] & 0x80)
                                                                 Notify(PSTR("\r\nMouse found"), 0x80);
@@ -586,7 +586,7 @@ void BTDSSP::HCI_event_task() {
                                 Notify(PSTR("\r\nReceived IO Capability Request: "), 0x80);
 #endif
                                 hci_io_capability_request_reply();
- 								break;
+                                break;
 
                         case EV_IO_CAPABILITY_RESPONSE:// < UseSimplePairing
 /*
@@ -608,7 +608,7 @@ void BTDSSP::HCI_event_task() {
                                 }
 #endif
                                 hci_user_confirmation_request_reply();
-								break;
+                                break;
 
                         case EV_SIMPLE_PAIRING_COMPLETE:// < UseSimplePairing
 /*
@@ -664,7 +664,7 @@ void BTDSSP::HCI_event_task() {
 */                              
                                 Notify(PSTR("\r\nLink key Stored to Arduino EEPROM"), 0x80);
 #endif                                                     
-								break;
+                                break;
 
 
                         case EV_AUTHENTICATION_COMPLETE:
@@ -689,15 +689,15 @@ void BTDSSP::HCI_event_task() {
 #endif
                                         }
 
-								        hci_set_connection_encryption(hci_handle);
+                                        hci_set_connection_encryption(hci_handle);
 /*                                
 #ifdef DEBUG_USB_HOST
                                         Notify(PSTR("\r\nhci_set_connection_encryption(ON)"), 0x80);
                                         D_PrintHex<uint16_t > (hci_handle, 0x80);
 #endif
 */								
-										hci_state = HCI_DONE_STATE;
-								} else {
+                                        hci_state = HCI_DONE_STATE;
+                                        } else {
 #ifdef DEBUG_USB_HOST
                                         Notify(PSTR("\r\nPairing Failed: "), 0x80);
                                         D_PrintHex<uint8_t > (hcibuf[2], 0x80);
@@ -723,15 +723,15 @@ void BTDSSP::HCI_event_task() {
 
                                /* We will just ignore the following events */
                         case EV_MAX_SLOTS_CHANGE:
-					    	    break;
+                                break;
 
                         case EV_NUMBER_OF_COMPLETED_PACKETS:
                                 break;
                         case EV_ROLE_CHANGED:
-					    	    break;
+                                break;
 
                         case EV_PAGE_SCAN_REPETITION_MODE_CHANGE:
-					    	    break;
+                                break;
 
 
                         case EV_LOOPBACK_COMMAND:
@@ -842,7 +842,7 @@ void BTDSSP::HCI_task() {
 #ifdef DEBUG_USB_HOST
                                 Notify(PSTR("\r\nSimple pairing was enabled"), 0x80);
 #endif
-								hci_set_event_mask();
+                                hci_set_event_mask();
                                 hci_state = HCI_SET_EVENT_MASK_STATE;
                        }
                         break;
@@ -959,11 +959,11 @@ void BTDSSP::HCI_task() {
 
                                         hci_state = HCI_CONNECT_DEVICE_STATE;
 									
-						        } else {
+                                } else {
 									
                                         hci_state = HCI_CHECK_DISC_BDADDR_STATE;
 
-		                        }
+                                }
                         }
                         break;
 
@@ -1021,9 +1021,9 @@ void BTDSSP::HCI_task() {
 #ifdef DEBUG_USB_HOST
                         Notify(PSTR("\r\nHCI_SCANNING_STATE:"), 0x80);
                         Notify(PSTR("\r\nconnectToHIDDevice:"), 0x80);
-                                D_PrintHex<uint8_t > (connectToHIDDevice, 0x80);
+                        D_PrintHex<uint8_t > (connectToHIDDevice, 0x80);
                         Notify(PSTR("\r\npairWithHIDDevice:"), 0x80);
-                                D_PrintHex<uint8_t > (pairWithHIDDevice, 0x80);
+                        D_PrintHex<uint8_t > (pairWithHIDDevice, 0x80);
 #endif
                         if(!connectToHIDDevice && !pairWithHIDDevice) {
 #ifdef DEBUG_USB_HOST
@@ -1046,7 +1046,7 @@ void BTDSSP::HCI_task() {
 #endif
                                 hci_remote_name_request();
                                 hci_state = HCI_REMOTE_NAME_STATE;
-						}
+                        }
                         break;
 
 
@@ -1143,21 +1143,21 @@ void BTDSSP::HCI_task() {
 
                 case HCI_DISCONNECTED_STATE:
 #ifdef DEBUG_USB_HOST
-                                Notify(PSTR("\r\nHCI Disconnected from Device"), 0x80);
+                        Notify(PSTR("\r\nHCI Disconnected from Device"), 0x80);
 #endif
-                                disconnect(); // kore wo yaranai to damemitai
+                        disconnect(); // kore wo yaranai to damemitai
 
-                                hci_event_flag = 0; // Clear all flags
+                        hci_event_flag = 0; // Clear all flags
 
-                                // Reset all buffers
-                                memset(hcibuf, 0, BULK_MAXPKTSIZE);
-                                memset(l2capinbuf, 0, BULK_MAXPKTSIZE);
+                        // Reset all buffers
+                        memset(hcibuf, 0, BULK_MAXPKTSIZE);
+                        memset(l2capinbuf, 0, BULK_MAXPKTSIZE);
 
-                                connectToHIDDevice = incomingHIDDevice = pairWithHIDDevice = false;
+                        connectToHIDDevice = incomingHIDDevice = pairWithHIDDevice = false;
 
-                                hci_state = HCI_SCANNING_STATE;
+                        hci_state = HCI_SCANNING_STATE;
 #ifdef DEBUG_USB_HOST
-                                Notify(PSTR("\r\nHCI_DISCONNECTED_STATE: >>> HCI_SCANNING_STATE:"), 0x80);
+                        Notify(PSTR("\r\nHCI_DISCONNECTED_STATE: >>> HCI_SCANNING_STATE:"), 0x80);
 #endif
                         break;
                 default:
