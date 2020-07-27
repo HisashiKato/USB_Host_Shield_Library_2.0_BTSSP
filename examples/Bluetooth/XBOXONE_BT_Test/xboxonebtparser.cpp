@@ -14,29 +14,29 @@ void JoystickReportParser::Parse(USBHID *hid, bool is_rpt_id, uint8_t len, uint8
 
         uint16_t pad[RPT_GAMEPAD_LEN];
         for (uint8_t i = 0; i < RPT_GAMEPAD_LEN; i++) {
-            pad[i] = (0x0000 | buf[(i * 2) + 1]);
-            pad[i] <<= 8;
-            pad[i] |= buf[(i * 2)];
-	    }
+                pad[i] = (0x0000 | buf[(i * 2) + 1]);
+                pad[i] <<= 8;
+                pad[i] |= buf[(i * 2)];
+        }
 	
 		
-		// Checking if there are changes in report since the method was last called
+        // Checking if there are changes in report since the method was last called
         for (uint8_t i = 0; i < RPT_GAMEPAD_LEN; i++) {
                 if (pad[i] != oldPad[i]) {
                         match = false;
                         break;
                 }
         }
-				
+			
         // Calling Game Pad event handler
         if (!match && joyEvents) {
                 joyEvents->OnGamePadChanged((const GamePadEventData*)buf);
 
                 for (uint8_t i = 0; i < RPT_GAMEPAD_LEN; i++) {
-					oldPad[i] = pad[i];
-                	padData[i] = oldPad[i];
-				}
-		}
+                        oldPad[i] = pad[i];
+                        padData[i] = oldPad[i];
+                }
+        }
 
         uint8_t hat = buf[12];
 
@@ -45,7 +45,7 @@ void JoystickReportParser::Parse(USBHID *hid, bool is_rpt_id, uint8_t len, uint8
                 joyEvents->OnHatSwitch(hat);
                 oldHat = hat;
                 hatData = oldHat;
-		}
+        }
 
 
 
@@ -64,12 +64,12 @@ void JoystickReportParser::Parse(USBHID *hid, bool is_rpt_id, uint8_t len, uint8
                                 if ((buttons & mask) > 0) {
                                         joyEvents->OnButtonDn(i + 1);
                                         buttonsData[i] = 1;
-								} else {
+                                } else {
                                         joyEvents->OnButtonUp(i + 1);
                                         buttonsData[i] = 0;
-								}
+                                }
                         }
-				}
+                }
                 oldButtons = buttons;
         }
 }
