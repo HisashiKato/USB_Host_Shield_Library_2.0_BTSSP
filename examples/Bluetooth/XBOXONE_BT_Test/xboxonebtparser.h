@@ -15,8 +15,8 @@ public:
         virtual void OnButtonDn(uint8_t but_id);
 };
 
-#define RPT_GAMEPAD_LEN		6
-#define NUM_BUTTONS        16
+#define RPT_GAMEPAD_LEN	    6
+#define NUM_BUTTONS        11
 
 class JoystickReportParser : public HIDReportParser {
         JoystickEvents *joyEvents;
