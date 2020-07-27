@@ -13,6 +13,9 @@
  Kristian Lauszus, TKJ Electronics
  Web      :  http://www.tkjelectronics.com
  e-mail   :  kristianl@tkjelectronics.com
+    
+ Modified 18 July 2020 by HisashiKato
+ Web      :  http://kato-h.cocolog-nifty.com/khweblog/
  */
 
 #ifndef _btxbox_h_
