@@ -975,12 +975,6 @@ void BTDSSP::HCI_task() {
 #ifdef DEBUG_USB_HOST
                                 Notify(PSTR("\r\nHID device found"), 0x80);
 #endif
-/*
-                                if(checkRemoteName) {
-                                        hci_remote_name(); // We need to know the name to distinguish between the Wiimote, the new Wiimote with Motion Plus inside, a Wii U Pro Controller and a Wii Balance Board
-                                        hci_state = HCI_REMOTE_NAME_STATE;
-                                } else
-*/
                                 hci_remote_name_request();
                                 hci_state = HCI_REMOTE_NAME_STATE;
 
