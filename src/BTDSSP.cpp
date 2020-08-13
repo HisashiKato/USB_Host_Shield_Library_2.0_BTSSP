@@ -373,7 +373,7 @@ void BTDSSP::HCI_event_task() {
 //                                        Notify(PSTR(" "), 0x80);
 //                                        D_PrintHex<uint8_t > (hcibuf[5], 0x80);
 #endif
-								}
+                                }
                                 break;
 
                         case EV_INQUIRY_COMPLETE:
@@ -695,7 +695,7 @@ void BTDSSP::HCI_event_task() {
                                         Notify(PSTR("\r\nhci_set_connection_encryption(ON)"), 0x80);
                                         D_PrintHex<uint16_t > (hci_handle, 0x80);
 #endif
-*/								
+*/                                
                                         hci_state = HCI_DONE_STATE;
                                         } else {
 #ifdef DEBUG_USB_HOST
@@ -958,9 +958,9 @@ void BTDSSP::HCI_task() {
                                 if(pairWithHIDDevice){
 
                                         hci_state = HCI_CONNECT_DEVICE_STATE;
-									
+                                    
                                 } else {
-									
+                                    
                                         hci_state = HCI_CHECK_DISC_BDADDR_STATE;
 
                                 }
@@ -1068,7 +1068,7 @@ void BTDSSP::HCI_task() {
                                 hci_reject_connection();
                                 hci_state = HCI_SCANNING_STATE;
 
-                        } else {				
+                        } else {                
 
                                 hci_accept_connection();
                                 hci_state = HCI_CONNECTED_STATE;
@@ -1332,13 +1332,13 @@ void BTDSSP::hci_write_simple_pairing_mode() {
 }
 
 void BTDSSP::hci_authentication_requested(uint16_t handle) {
-	hcibuf[0] = 0x11; // HCI OCF = 11
-	hcibuf[1] = 0x01 << 2; // HCI OGF = 1
-	hcibuf[2] = 0x02; // Parameter Length = 2
-	hcibuf[3] = (uint8_t)(handle & 0xFF);//connection handle - low byte
-	hcibuf[4] = (uint8_t)((handle >> 8) & 0x0F);//connection handle - high byte
-	
-	HCI_Command(hcibuf, 5);
+    hcibuf[0] = 0x11; // HCI OCF = 11
+    hcibuf[1] = 0x01 << 2; // HCI OGF = 1
+    hcibuf[2] = 0x02; // Parameter Length = 2
+    hcibuf[3] = (uint8_t)(handle & 0xFF);//connection handle - low byte
+    hcibuf[4] = (uint8_t)((handle >> 8) & 0x0F);//connection handle - high byte
+    
+    HCI_Command(hcibuf, 5);
 }
 
 
@@ -1393,9 +1393,9 @@ void BTDSSP::hci_link_key_request_negative_reply() {
 
 
 void BTDSSP::hci_io_capability_request_reply() {
-		hcibuf[0] = 0x2B; // HCI OCF = 2B
-		hcibuf[1] = 0x01 << 2; // HCI OGF = 1
-		hcibuf[2] = 0x09;
+        hcibuf[0] = 0x2B; // HCI OCF = 2B
+        hcibuf[1] = 0x01 << 2; // HCI OGF = 1
+        hcibuf[2] = 0x09;
         for(uint8_t i = 0; i < 6; i++) hcibuf[i + 3] = disc_bdaddr[i]; // 6 octet bdaddr
 //        hcibuf[3] = disc_bdaddr[0]; // 6 octet bdaddr
 //        hcibuf[4] = disc_bdaddr[1];
@@ -1403,17 +1403,17 @@ void BTDSSP::hci_io_capability_request_reply() {
 //        hcibuf[6] = disc_bdaddr[3];
 //        hcibuf[7] = disc_bdaddr[4];
 //        hcibuf[8] = disc_bdaddr[5];
-		hcibuf[9] = 0x03; // NoInputNoOutput
-		hcibuf[10] = 0x00;
-		hcibuf[11] = 0x00;
+        hcibuf[9] = 0x03; // NoInputNoOutput
+        hcibuf[10] = 0x00;
+        hcibuf[11] = 0x00;
 
         HCI_Command(hcibuf, 12);
 }
 
 void BTDSSP::hci_user_confirmation_request_reply() {
-	hcibuf[0] = 0x2C; // HCI OCF = 2C
-	hcibuf[1] = 0x01 << 2; // HCI OGF = 1
-	hcibuf[2] = 0x06; // Parameter Length = 6
+    hcibuf[0] = 0x2C; // HCI OCF = 2C
+    hcibuf[1] = 0x01 << 2; // HCI OGF = 1
+    hcibuf[2] = 0x06; // Parameter Length = 6
         for(uint8_t i = 0; i < 6; i++) hcibuf[i + 3] = disc_bdaddr[i]; // 6 octet bdaddr
 //        hcibuf[3] = disc_bdaddr[0]; // 6 octet bdaddr
 //        hcibuf[4] = disc_bdaddr[1];
@@ -1421,19 +1421,19 @@ void BTDSSP::hci_user_confirmation_request_reply() {
 //        hcibuf[6] = disc_bdaddr[3];
 //        hcibuf[7] = disc_bdaddr[4];
 //        hcibuf[8] = disc_bdaddr[5];
-	
-	HCI_Command(hcibuf, 9);
+    
+    HCI_Command(hcibuf, 9);
 }
 
 void BTDSSP::hci_set_connection_encryption(uint16_t handle) {
-	hcibuf[0] = 0x13; // HCI OCF = 13
-	hcibuf[1] = 0x01 << 2; // HCI OGF = 1
-	hcibuf[2] = 0x03; // Parameter Length = 9
-	hcibuf[3] = (uint8_t)(handle & 0xFF); //Connection_Handle - low byte
-	hcibuf[4] = (uint8_t)((handle >> 8) & 0x0F); //Connection_Handle - high byte
-	hcibuf[5] = 0x01; // 0x00=OFF 0x01=ON 
-	
-	HCI_Command(hcibuf, 6);
+    hcibuf[0] = 0x13; // HCI OCF = 13
+    hcibuf[1] = 0x01 << 2; // HCI OGF = 1
+    hcibuf[2] = 0x03; // Parameter Length = 9
+    hcibuf[3] = (uint8_t)(handle & 0xFF); //Connection_Handle - low byte
+    hcibuf[4] = (uint8_t)((handle >> 8) & 0x0F); //Connection_Handle - high byte
+    hcibuf[5] = 0x01; // 0x00=OFF 0x01=ON 
+    
+    HCI_Command(hcibuf, 6);
 }
 
 void BTDSSP::hci_inquiry() {
