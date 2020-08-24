@@ -35,8 +35,8 @@ USB Host Library Rev.2.0 BTXBOXは、Arduino IDEで使用できます。
 5. Arduino IDE で、メニューの スケッチ > ライブラリをインクルード のライブラリの一覧に、USB Host Shield Library 2.0 BTXBOX が表示されているのを確認してください。
 
 ### ライブラリの使用方法  
-基本的な使い方は、本家の USB Host Library Rev.2.0 の BTHID とほぼ同じです。BTD の代わりに BTDSSP を使います。
-但し、ペアリングに PINコードを使用しないので、
+基本的な使い方は、本家の USB Host Library Rev.2.0 の BTHID とほぼ同じです。但し、BTD の代わりに、このライブラリの BTDSSP を使います。
+そして、ペアリングに PINコードを使用しないので、
 
 ペアリングモードが
 `BTXBOX btxbox(&Btdssp, PAIR);`
