@@ -9,7 +9,8 @@ USB_Host_Shield_2.0 リポジトリ
 プロジェクトサイト   
 <https://chome.nerpa.tech/arduino_usb_host_shield_projects/>
 
-Bluettoth USBアダプタを刺した USB Host Shield 2.0 と、USB Host Library Rev.2.0 を使って、マイクロソフトのゲームコントローラー (Xbox One S から使われ始めた MODEL 1708)を Bluetooth で Arduino に接続しようと試みたのですが、ゲームコントローラーが4ケタのPINコードを使用する古いペアリングには対応していないので出来ませんでした。そこで USB Host Library Rev.2.0 の BTD.cpp を、Bluetooth Classic SSP でペアリング出来るように改造してみました。従来のPS3コントローラー,PS4コントローラー,Wiiリモコン等との Bluetooth接続の機能は外しました。  
+Bluettoth USBアダプタを刺した USB Host Shield 2.0 と、USB Host Library Rev.2.0 を使って、マイクロソフトのゲームコントローラー (Xbox One S から使われ始めた MODEL 1708)を Bluetooth で Arduino に接続しようと試みたのですが、~~ゲームコントローラーが4ケタのPINコードを使用する古いペアリングには対応していないので出来ませんでした。そこで USB Host Library Rev.2.0 の BTD.cpp を、Bluetooth Classic SSP でペアリング出来るように改造してみました。従来のPS3コントローラー,PS4コントローラー,Wiiリモコン等との Bluetooth接続の機能は外しました~~(追記：2020/11/16)接続に対応したっぽいです。  
+USB Host Library Rev.2.0 の、過去の BTD.cpp を、Bluetooth Classic SSP でペアリング出来るように改造したものです。従来のPS3コントローラー,PS4コントローラー,Wiiリモコン等との Bluetooth接続の機能は外しました。そのため、若干サイズが小さくなっています。SSP接続専用のライブラリとして、ここに残しておきます。
 
 USB_Host_Shield_Library_2.0_BTXBOX リポジトリ  
 <https://github.com/HisashiKato/USB_Host_Shield_Library_2.0_BTXBOX>  
