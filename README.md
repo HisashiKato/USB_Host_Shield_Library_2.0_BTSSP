@@ -15,6 +15,8 @@ USB Host Library Rev.2.0 の、過去の BTD.cpp を、Bluetooth Classic SSP で
 USB_Host_Shield_Library_2.0_BTXBOX リポジトリ  
 <https://github.com/HisashiKato/USB_Host_Shield_Library_2.0_BTXBOX>  
 
+　  
+
 ## ハードウェア
 * Arduino 及び、その互換機  
 * USB Host Shield　2.0  
