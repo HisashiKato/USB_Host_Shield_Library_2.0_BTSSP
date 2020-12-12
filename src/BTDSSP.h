@@ -307,7 +307,7 @@ public:
         void hci_write_local_name(const char* name);
 
         void hci_write_simple_pairing_mode();
-		void hci_set_event_mask();
+        void hci_set_event_mask();
 
     	/** Enable visibility to other Bluetooth devices. */
         void hci_write_scan_enable();
@@ -464,7 +464,7 @@ public:
          */
         uint8_t readPollInterval() {
                 return pollInterval;
-		};
+        };
         
 		 
 		
