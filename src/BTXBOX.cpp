@@ -16,7 +16,7 @@
     
  Modified 18 July 2020 by HisashiKato
  Web      :  http://kato-h.cocolog-nifty.com/khweblog/
-*/
+ */
 
 #include "BTXBOX.h"
 // To enable serial debugging see "settings.h"
