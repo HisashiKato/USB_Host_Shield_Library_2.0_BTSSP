@@ -28,14 +28,12 @@ USB Host Library Rev.2.0 BTXBOXは、Arduino IDEで使用できます。
     
 1. Code の Download ZIP 、または下記URLから、ライブラリのZIPをダウンロードします。  
 <https://github.com/HisashiKato/USB_Host_Shield_Library_2.0_BTXBOX/archive/master.zip>  
-  
-2. ダウンロードした　USB_Host_Shield_Library_2.0_BTXBOX-master.zip　を　USB_Host_Shield_Library_2.0_BTXBOX.zip にリネームします。（必須ではないです）  
-  
-3. Arduino IDE を起動して、スケッチ > ライブラリをインクルード > .ZIP形式のライブラリをインストール で、ダウンロードした USB_Host_Shield_Library_2.0_BTXBOX.zip を指定します。  
    
-4. Arduino IDE に、「ライブラリが追加されました。「ライブラリをインクルード」メニューを確認してください。」と表示されれば成功。
+2. Arduino IDE を起動して、スケッチ > ライブラリをインクルード > .ZIP形式のライブラリをインストール で、ダウンロードした USB_Host_Shield_Library_2.0_BTXBOX-master.zip を指定します。  
+   
+3. Arduino IDE に、「ライブラリが追加されました。「ライブラリをインクルード」メニューを確認してください。」と表示されれば成功。
 
-5. Arduino IDE で、メニューの スケッチ > ライブラリをインクルード のライブラリの一覧に、USB Host Shield Library 2.0 BTXBOX が表示されているのを確認してください。
+4. Arduino IDE で、メニューの スケッチ > ライブラリをインクルード のライブラリの一覧に、USB Host Shield Library 2.0 BTXBOX が表示されているのを確認してください。
 
 ### ライブラリの使用方法  
 基本的な使い方は、本家の USB Host Library Rev.2.0 の BTHID とほぼ同じです。但し、BTD の代わりに、このライブラリの BTDSSP を使います。
