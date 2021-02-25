@@ -35,6 +35,7 @@ USB_Host_Shield_Library_2.0_BTXBOX リポジトリ
 * Bluetooth 4.0 USBアダプタ
 
    
+   
 
 ## 使用方法
 ### Arduino IDE にライブラリを組み込む  
@@ -50,7 +51,8 @@ USB Host Library Rev.2.0 BTXBOXは、Arduino IDEで使用できます。
 4. Arduino IDE で、メニューの スケッチ > ライブラリをインクルード のライブラリの一覧に、USB Host Shield Library 2.0 BTXBOX が表示されているのを確認してください。
 
    
-
+   
+   
 ### ライブラリの使用方法
 先ずは、元の USB Host Library Rev.2.0 のライブラリの使用方法を読んでください。
 
@@ -68,6 +70,7 @@ SSP のリンクキーを保存するので、再接続等が確実になって�
 
 このライブラリは、BluetoothのSSP接続にだけ対応しています。従来のPS3コントローラー,PS4コントローラー,Wiiリモコン等との接続や、旧来のPINコードを用いた接続は外しました。USB有線での接続にも対応していません。それらは元の USB Host Library Rev.2.0 ライブラリを使用してください。
 
+   
    
 
 ## 対応コントローラー
