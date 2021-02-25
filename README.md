@@ -84,3 +84,19 @@ SSP のリンクキーを保存するので、再接続等が確実になって�
 ### Nintendo Switch Pro コントローラー
 
 暫定版です。コントローラーの基本の情報の受信のみです。初期化や振動やジャイロ等には対応していません（サブコマンドを入れていません）
+
+## 参考にさせて頂いたプロジェクトやWEBサイト
+<https://github.com/felis/USB_Host_Shield_2.0>：USB_Host_Shield_2.0 の本家
+
+<https://www.silex.jp/blog/wireless/>：サイレックス・テクノロジー株式会社 のblog、Wireless・のおと（Blietoothの基本）
+
+<http://www.yts.rdy.jp/pic/GB002/GB002.html>：YTSさんの、YTSのホームページ（SSPの詳細等）
+
+<https://hackaday.io/project/170365-blueretro>：Jacques Gagnon 氏の"BlueRetro"（とても参考になりました！！！）
+
+<https://github.com/atar-axis/xpadneo>：Advanced Linux Driver for Xbox One Wireless Gamepad
+
+<https://github.com/dekuNukem/Nintendo_Switch_Reverse_Engineering>：Nintendo_Switch_Reverse_Engineering
+
+その他、思いついたら追加します。
+こうして作ることが出来たのも、みなさんのおかげです。
