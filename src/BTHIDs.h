@@ -13,64 +13,31 @@
  Kristian Lauszus, TKJ Electronics
  Web      :  http://www.tkjelectronics.com
  e-mail   :  kristianl@tkjelectronics.com
-    
- Modified 18 July 2020 by HisashiKato
+  
+ Modified 26 Feb 2021 by HisashiKato
  Web      :  http://kato-h.cocolog-nifty.com/khweblog/
  */
 
-#ifndef _btxbox_h_
-#define _btxbox_h_
+#ifndef _bthids_h_
+#define _bthids_h_
 
 #include "BTDSSP.h"
-#include "hidboot.h"
-#include "hiduniversal.h"
-
-#define GAMEPAD_PARSER_ID       0
-#define NUM_PARSERS             1
-/*
-#define KEYBOARD_PARSER_ID      0
-#define MOUSE_PARSER_ID         1
-#define NUM_PARSERS             2
-*/
 
 /** This BluetoothService class implements support for Bluetooth HID devices. */
-class BTXBOX : public BluetoothService {
+class BTHIDs : public BluetoothService {
 public:
         /**
-         * Constructor for the BTXBOX class.
+         * Constructor for the BTHIDs class.
          * @param  p   Pointer to the BTDSSP class instance.
          * @param  pair   Set this to true in order to pair with the device. If the argument is omitted then it will not pair with it. One can use ::PAIR to set it to true.
          */
-        BTXBOX(BTDSSP *p, bool pair = false);
+        BTHIDs(BTDSSP *p, bool pair = false);
 
         /** @name BluetoothService implementation */
         /** Used this to disconnect the devices. */
         void disconnect();
         /**@}*/
 
-        /**
-         * Get HIDReportParser.
-         * @param  id ID of parser.
-         * @return    Returns the corresponding HIDReportParser. Returns NULL if id is not valid.
-         */
-        HIDReportParser *GetReportParser(uint8_t id) {
-                if (id >= NUM_PARSERS)
-                        return NULL;
-                return pRptParser[id];
-        };
-
-        /**
-         * Set HIDReportParser to be used.
-         * @param  id  Id of parser.
-         * @param  prs Pointer to HIDReportParser.
-         * @return     Returns true if the HIDReportParser is set. False otherwise.
-         */
-        bool SetReportParser(uint8_t id, HIDReportParser *prs) {
-                if (id >= NUM_PARSERS)
-                        return false;
-                pRptParser[id] = prs;
-                return true;
-        };
 
         /**
          * Set HID protocol mode.
@@ -81,14 +48,14 @@ public:
         };
 
         /**@{*/
+
         /**
-         * Used to set the leds on a keyboard.
-         * @param data See ::KBDLEDS in hidboot.h
+         * Used to
+         * @param data 
          */
-        void setLeds(struct KBDLEDS data) {
-                setLeds(*((uint8_t*)&data));
-        };
-        void setLeds(uint8_t data);
+        void sendReport(uint8_t *data, uint8_t datasize);
+
+
         /**@}*/
 
         /** True if a device is connected */
@@ -99,6 +66,7 @@ public:
                 if(pBtdssp)
                         pBtdssp->pairWithHID();
         };
+
 
 protected:
         /** @name BluetoothService implementation */
@@ -119,7 +87,7 @@ protected:
         void onInit() {
                 if(pFuncOnInit)
                         pFuncOnInit(); // Call the user function
-                OnInitBTXBOX();
+                OnInitBTHIDs();
         };
         /**@}*/
 
@@ -129,15 +97,15 @@ protected:
          * @param len The length of the incoming data.
          * @param buf Pointer to the data buffer.
          */
-        virtual void ParseBTXBOXData(uint8_t len __attribute__((unused)), uint8_t *buf __attribute__((unused))) {
+        virtual void ParseBTHIDsData(uint8_t len __attribute__((unused)), uint8_t *buf __attribute__((unused))) {
                 return;
         };
         /** Called when a device is connected */
-        virtual void OnInitBTXBOX() {
+        virtual void OnInitBTHIDs() {
                 return;
         };
         /** Used to reset any buffers in the class that inherits this */
-        virtual void ResetBTXBOX() {
+        virtual void ResetBTHIDs() {
                 return;
         }
         /**@}*/
@@ -149,7 +117,6 @@ protected:
         uint8_t interrupt_scid[2];
 
 private:
-        HIDReportParser *pRptParser[NUM_PARSERS]; // Pointer to HIDReportParsers.
 
         /** Set report protocol. */
         void setProtocol();

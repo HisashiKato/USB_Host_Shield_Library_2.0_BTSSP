@@ -13,21 +13,19 @@
  Kristian Lauszus, TKJ Electronics
  Web      :  http://www.tkjelectronics.com
  e-mail   :  kristianl@tkjelectronics.com
-    
- Modified 18 July 2020 by HisashiKato
+  
+ Modified 26 Feb 2021 by HisashiKato
  Web      :  http://kato-h.cocolog-nifty.com/khweblog/
  */
 
-#include "BTXBOX.h"
+#include "BTHIDs.h"
 // To enable serial debugging see "settings.h"
 //#define EXTRADEBUG // Uncomment to get even more debugging data
 //#define PRINTREPORT 1// Uncomment to print the report send by the HID device
 
-BTXBOX::BTXBOX(BTDSSP *p, bool pair) :
+BTHIDs::BTHIDs(BTDSSP *p, bool pair) :
 BluetoothService(p), // Pointer to USB class instance - mandatory
-protocolMode(USB_HID_BOOT_PROTOCOL) {
-        for(uint8_t i = 0; i < NUM_PARSERS; i++)
-                pRptParser[i] = NULL;
+protocolMode(HID_RPT_PROTOCOL) {
 
         pBtdssp->pairWithHIDDevice = pair;
 
@@ -40,22 +38,22 @@ protocolMode(USB_HID_BOOT_PROTOCOL) {
         Reset();
 }
 
-void BTXBOX::Reset() {
+void BTHIDs::Reset() {
         connected = false;
         activeConnection = false;
         l2cap_event_flag = 0; // Reset flags
         l2cap_state = L2CAP_WAIT;
-        ResetBTXBOX();
+        ResetBTHIDs();
 }
 
-void BTXBOX::disconnect() { // Use this void to disconnect the device
+void BTHIDs::disconnect() { // Use this void to disconnect the device
         // First the HID interrupt channel has to be disconnected, then the HID control channel and finally the HCI connection
         pBtdssp->l2cap_disconnection_request(hci_handle, ++identifier, interrupt_scid, interrupt_dcid);
         Reset();
         l2cap_state = L2CAP_INTERRUPT_DISCONNECT;
 }
 
-void BTXBOX::ACLData(uint8_t* l2capinbuf) {
+void BTHIDs::ACLData(uint8_t* l2capinbuf) {
         if(!pBtdssp->l2capConnectionClaimed && pBtdssp->incomingHIDDevice && !connected && !activeConnection) {
                 if(l2capinbuf[8] == L2CAP_CMD_CONNECTION_REQUEST) {
                         if((l2capinbuf[12] | (l2capinbuf[13] << 8)) == HID_CTRL_PSM) {
@@ -189,39 +187,7 @@ void BTXBOX::ACLData(uint8_t* l2capinbuf) {
 #endif
                         if(l2capinbuf[8] == 0xA1) { // HID_THDR_DATA_INPUT
                                 uint16_t length = ((uint16_t)l2capinbuf[5] << 8 | l2capinbuf[4]);
-                                ParseBTXBOXData((uint8_t)(length - 1), &l2capinbuf[9]);
-
-                                switch(l2capinbuf[9]) {
-                                        case 0x01: // Gamepad events
-                                                if(pRptParser[GAMEPAD_PARSER_ID])
-                                                        pRptParser[GAMEPAD_PARSER_ID]->Parse(reinterpret_cast<USBHID *>(this), 0, (uint8_t)(length - 2), &l2capinbuf[10]); // Use reinterpret_cast again to extract the instance
-                                                break;
-/*
-                                        case 0x04: // 
-                                                if(pRptParser[JOYSTICK_PARSER_ID])
-                                                        pRptParser[JOYSTICK_PARSER_ID]->Parse(reinterpret_cast<USBHID *>(this), 0, (uint8_t)(length - 2), &l2capinbuf[10]); // Use reinterpret_cast again to extract the instance
-                                                break;
-*/
-
-/*
-                                        case 0x01: // Keyboard events
-                                                if(pRptParser[KEYBOARD_PARSER_ID])
-                                                        pRptParser[KEYBOARD_PARSER_ID]->Parse(reinterpret_cast<USBHID *>(this), 0, (uint8_t)(length - 2), &l2capinbuf[10]); // Use reinterpret_cast again to extract the instance
-                                                break;
-
-                                        case 0x02: // Mouse events
-                                                if(pRptParser[MOUSE_PARSER_ID])
-                                                        pRptParser[MOUSE_PARSER_ID]->Parse(reinterpret_cast<USBHID *>(this), 0, (uint8_t)(length - 2), &l2capinbuf[10]); // Use reinterpret_cast again to extract the instance
-                                                break;
-*/
-
-#ifdef EXTRADEBUG
-                                        default:
-                                                Notify(PSTR("\r\nUnknown Report type: "), 0x80);
-                                                D_PrintHex<uint8_t > (l2capinbuf[9], 0x80);
-                                                break;
-#endif
-                                }
+                                ParseBTHIDsData((uint8_t)(length - 1), &l2capinbuf[9]);
                         }
                 } else if(l2capinbuf[6] == control_dcid[0] && l2capinbuf[7] == control_dcid[1]) { // l2cap_control
 #ifdef PRINTREPORT
@@ -251,7 +217,7 @@ void BTXBOX::ACLData(uint8_t* l2capinbuf) {
         }
 }
 
-void BTXBOX::L2CAP_task() {
+void BTHIDs::L2CAP_task() {
         switch(l2cap_state) {
                         /* These states are used if the HID device is the host */
                 case L2CAP_CONTROL_SUCCESS:
@@ -324,7 +290,7 @@ void BTXBOX::L2CAP_task() {
                                 pBtdssp->connectToHIDDevice = false;
                                 pBtdssp->pairWithHIDDevice = false;
                                 connected = true;
-
+								
 								onInit();
                                 
 								l2cap_state = L2CAP_DONE;
@@ -359,7 +325,7 @@ void BTXBOX::L2CAP_task() {
         }
 }
 
-void BTXBOX::Run() {
+void BTHIDs::Run() {
         switch(l2cap_state) {
                 case L2CAP_WAIT:
                         if(pBtdssp->connectToHIDDevice && !pBtdssp->l2capConnectionClaimed && !connected && !activeConnection) {
@@ -393,25 +359,23 @@ void BTXBOX::Run() {
 /*                    HID Commands                          */
 
 /************************************************************/
-void BTXBOX::setProtocol() {
+void BTHIDs::setProtocol() {
 #ifdef DEBUG_USB_HOST
         Notify(PSTR("\r\nSet protocol mode: "), 0x80);
         D_PrintHex<uint8_t > (protocolMode, 0x80);
 #endif
-        if (protocolMode != USB_HID_BOOT_PROTOCOL && protocolMode != HID_RPT_PROTOCOL) {
-#ifdef DEBUG_USB_HOST
-                Notify(PSTR("\r\nNot a valid protocol mode. Using Boot protocol instead."), 0x80);
-#endif
-                protocolMode = USB_HID_BOOT_PROTOCOL; // Use Boot Protocol by default
-        }
+        protocolMode = HID_RPT_PROTOCOL; // Use Report Protocol only
         uint8_t command = 0x70 | protocolMode; // Set Protocol, see Bluetooth HID specs page 33
         pBtdssp->L2CAP_Command(hci_handle, &command, 1, control_scid[0], control_scid[1]);
 }
 
-void BTXBOX::setLeds(uint8_t data) {
-        uint8_t buf[3];
-        buf[0] = 0xA2; // HID BT DATA_request (0xA0) | Report Type (Output 0x02)
-        buf[1] = 0x01; // Report ID
-        buf[2] = data;
-        pBtdssp->L2CAP_Command(hci_handle, buf, 3, interrupt_scid[0], interrupt_scid[1]);
+void BTHIDs::sendReport(uint8_t *data, uint8_t datasize) {
+        pBtdssp->L2CAP_Command(hci_handle, data, datasize, interrupt_scid[0], interrupt_scid[1]);
+#ifdef PRINTREPORT
+        Notify(PSTR("\r\nsendReport: "), 0x80);
+        for(uint8_t i = 0; i < datasize; i++) {
+                D_PrintHex<uint8_t > (data[i], 0x80);
+                Notify(PSTR(" "), 0x80);
+        }
+#endif
 }
