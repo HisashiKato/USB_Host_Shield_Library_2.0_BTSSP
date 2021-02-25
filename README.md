@@ -88,7 +88,7 @@ SSP のリンクキーを保存するので、再接続等が確実になって�
 ## 参考にさせて頂いたプロジェクトやWEBサイト
 <https://github.com/felis/USB_Host_Shield_2.0>：USB_Host_Shield_2.0 の本家
 
-<https://www.silex.jp/blog/wireless/>：サイレックス・テクノロジー株式会社 のblog、Wireless・のおと（Blietoothの基本）
+<https://www.silex.jp/blog/wireless/>：サイレックス・テクノロジー株式会社 のblog、Wireless・のおと（Bluetoothの基本）
 
 <http://www.yts.rdy.jp/pic/GB002/GB002.html>：YTSさんの、YTSのホームページ（SSPの詳細等）
 
