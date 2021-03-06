@@ -18,8 +18,8 @@
  Web      :  http://kato-h.cocolog-nifty.com/khweblog/
  */
 
-#ifndef _bthid_h_
-#define _bthid_h_
+#ifndef _bthida_h_
+#define _bthida_h_
 
 #include "BTDSSP.h"
 #include "hidboot.h"
@@ -31,14 +31,14 @@
 
 
 /** This BluetoothService class implements support for Bluetooth HID devices. */
-class BTHID : public BluetoothService {
+class BTHIDa : public BluetoothService {
 public:
         /**
-         * Constructor for the BTHID class.
+         * Constructor for the BTHIDa class.
          * @param  p   Pointer to the BTDSSP class instance.
          * @param  pair   Set this to true in order to pair with the device. If the argument is omitted then it will not pair with it. One can use ::PAIR to set it to true.
          */
-        BTHID(BTDSSP *p, bool pair = false);
+        BTHIDa(BTDSSP *p, bool pair = false);
 
         /** @name BluetoothService implementation */
         /** Used this to disconnect the devices. */
@@ -116,7 +116,7 @@ protected:
         void onInit() {
                 if(pFuncOnInit)
                         pFuncOnInit(); // Call the user function
-                OnInitBTHID();
+                OnInitBTHIDa();
         };
         /**@}*/
 
@@ -126,15 +126,15 @@ protected:
          * @param len The length of the incoming data.
          * @param buf Pointer to the data buffer.
          */
-        virtual void ParseBTHIDData(uint8_t len __attribute__((unused)), uint8_t *buf __attribute__((unused))) {
+        virtual void ParseBTHIDaData(uint8_t len __attribute__((unused)), uint8_t *buf __attribute__((unused))) {
                 return;
         };
         /** Called when a device is connected */
-        virtual void OnInitBTHID() {
+        virtual void OnInitBTHIDa() {
                 return;
         };
         /** Used to reset any buffers in the class that inherits this */
-        virtual void ResetBTHID() {
+        virtual void ResetBTHIDa() {
                 return;
         }
         /**@}*/

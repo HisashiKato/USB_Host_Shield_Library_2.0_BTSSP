@@ -32,8 +32,8 @@ uint8_t KbdRptParser::HandleLockingKeys(USBHID *hid, uint8_t key) {
   }
 
   if (old_keys != kbdLockingKeys.bLeds && hid) {
-    BTHID *pBTHID = reinterpret_cast<BTHID *> (hid); // A cast the other way around is done in BTHID.cpp
-    pBTHID->setLeds(kbdLockingKeys.bLeds); // Update the LEDs on the keyboard
+    BTHIDa *pBTHIDa = reinterpret_cast<BTHIDa *> (hid); // A cast the other way around is done in BTHIDa.cpp
+    pBTHIDa->setLeds(kbdLockingKeys.bLeds); // Update the LEDs on the keyboard
   }
 
   return 0;

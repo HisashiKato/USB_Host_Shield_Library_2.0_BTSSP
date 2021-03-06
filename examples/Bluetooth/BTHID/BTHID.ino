@@ -7,7 +7,7 @@
  Web      :  http://kato-h.cocolog-nifty.com/khweblog/
 */
 
-#include <BTHID.h>
+#include <BTHIDa.h>
 #include <usbhub.h>
 #include "KeyboardParser.h"
 #include "MouseParser.h"
@@ -24,10 +24,10 @@ BTDSSP Btdssp(&Usb); // You have to create the Bluetooth Dongle instance like so
 
 /* You can create the instance of the class in two ways */
 // This will start an inquiry and then pair with your device - you only have to do this once
-BTHID bthid(&Btdssp, PAIR);
+BTHIDa bthida(&Btdssp, PAIR);
 
 // After that you can simply create the instance like so
-//BTHID bthid(&Btdssp);
+//BTHIDa bthida(&Btdssp);
 
 KbdRptParser keyboardPrs;
 MouseRptParser mousePrs;
@@ -42,13 +42,13 @@ void setup() {
     while (1); // Halt
   }
 
-  bthid.SetReportParser(KEYBOARD_PARSER_ID, &keyboardPrs);
-  bthid.SetReportParser(MOUSE_PARSER_ID, &mousePrs);
+  bthida.SetReportParser(KEYBOARD_PARSER_ID, &keyboardPrs);
+  bthida.SetReportParser(MOUSE_PARSER_ID, &mousePrs);
 
   // If "Boot Protocol Mode" does not work, then try "Report Protocol Mode"
-  // If that does not work either, then uncomment PRINTREPORT in BTHID.cpp to see the raw report
-  bthid.setProtocolMode(USB_HID_BOOT_PROTOCOL); // Boot Protocol Mode
-  //bthid.setProtocolMode(HID_RPT_PROTOCOL); // Report Protocol Mode
+  // If that does not work either, then uncomment PRINTREPORT in BTHIDa.cpp to see the raw report
+  bthida.setProtocolMode(USB_HID_BOOT_PROTOCOL); // Boot Protocol Mode
+  //bthida.setProtocolMode(HID_RPT_PROTOCOL); // Report Protocol Mode
 
   Serial.print(F("\r\nHID Bluetooth Library Started"));
 }
