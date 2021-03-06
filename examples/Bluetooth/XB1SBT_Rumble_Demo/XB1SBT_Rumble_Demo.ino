@@ -87,8 +87,8 @@ void loop() {
       Serial.print(Xb1s.triggerData(RT));
     }
 
-    int magLeft = (Xb1s.triggerData(LT) / 4);
-    int magRight = (Xb1s.triggerData(RT) / 4);
+    int magLeft = map(Xb1s.triggerData(LT), 0, 1023, 0, 100);
+    int magRight = map(Xb1s.triggerData(RT), 0, 1023, 0, 100);
     if( ! Xb1s.buttonData(LB)){  // If the rumble data transmit is not restrained,it will be crashed.
       Xb1s.rumble(magLeft, magRight, magLeft, magRight);
     }
@@ -144,13 +144,13 @@ void loop() {
     if (Xb1s.buttonClick(A)) {
       Serial.print(F("\r\nA"));
       Serial.print(F("\r\nSetRumblePulseDemoPattern A"));
-      Xb1s.rumblePulseMagSet(127, 255, 127, 255);
+      Xb1s.rumblePulseMagSet(50, 100, 50, 100);
       Xb1s.rumblePulseLoopSet(10, 5, 5);
     }
     if (Xb1s.buttonClick(B)) {
       Serial.print(F("\r\nB"));
       Serial.print(F("\r\nSetRumblePulseDemoPattern B"));
-      Xb1s.rumblePulseMagSet(255, 255, 255, 255);
+      Xb1s.rumblePulseMagSet(100, 100, 100, 100);
       Xb1s.rumblePulseLoopSet(50, 50, 2);
     }
     if (Xb1s.buttonClick(X)) {
@@ -171,7 +171,7 @@ void loop() {
     if (Xb1s.buttonData(LB)){
       Serial.print(F("\r\nLB"));
     }
-    int magAll = (Xb1s.buttonData(LB) * 255);
+    int magAll = (Xb1s.buttonData(LB) * 100);
     if((magLeft == 0) && (magRight == 0)){ // If the rumble data transmit is not restrained,it will be crashed.
       Xb1s.rumble(magAll, magAll, magAll, magAll);
     }
@@ -201,10 +201,10 @@ void loop() {
     }
     if (Xb1s.buttonClick(MENU)) {
       Serial.print(F("\r\nMENU"));
-      Xb1s.rumbleTest(0b0110,0x7F,0x7F,0x7F,0x7F,50,100,2);
+      Xb1s.rumbleTest(0b0110,50,50,50,50,100,200,2);
       Serial.print(F("\r\nrumbleTest"));
-      Serial.print(F("\r\n0b0110,0x7F,0x7F,0x7F,0x7F,100,200,2"));
-      Serial.print(F("\r\nRumbleMotorEnable:0b0110, Mag:0x7F, VibrationTime:100x10ms, StartWaiting:200x10ms, LoopCount:2(Vibrate 3 times)"));
+      Serial.print(F("\r\n0b0110,50,50,50,50,100,200,2"));
+      Serial.print(F("\r\nRumbleMotorEnable:0b0110, Mag:50, VibrationTime:100x10ms, StartWaiting:200x10ms, LoopCount:2(Vibrate 3 times)"));
     }
     if (Xb1s.buttonClick(XBOX)) {
       Serial.print(F("\r\nXBOX"));
