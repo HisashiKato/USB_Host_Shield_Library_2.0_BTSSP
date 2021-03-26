@@ -100,8 +100,8 @@ union SWProBTButtons {
                 uint8_t zr : 1;
 
                 // buf 2
-                uint8_t minus_b : 1;
-                uint8_t plus_b : 1;
+                uint8_t minus : 1;
+                uint8_t plus : 1;
                 uint8_t ls : 1;
                 uint8_t rs : 1;
                 uint8_t homeb : 1;
