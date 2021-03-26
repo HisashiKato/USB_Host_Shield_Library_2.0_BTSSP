@@ -80,7 +80,7 @@ void SWProBTParser::Parse(uint8_t len, uint8_t *buf) {
                         }
 
                 } else if (buf[0] == 0x21) { // BT_HIDP_SW_SUBCMD_ACK
-
+                        /* To Do */
                         return;
                 } else {
 #ifdef DEBUG_USB_HOST
