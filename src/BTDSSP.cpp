@@ -366,12 +366,14 @@ void BTDSSP::HCI_event_task() {
 #ifdef DEBUG_USB_HOST
                                         Notify(PSTR("\r\nHCI Command Failed: "), 0x80);
                                         D_PrintHex<uint8_t > (hcibuf[2], 0x80);
-//                                        Notify(PSTR("\r\nNum HCI Command Packets: "), 0x80);
-//                                        D_PrintHex<uint8_t > (hcibuf[3], 0x80);
-//                                        Notify(PSTR("\r\nCommand Opcode: "), 0x80);
-//                                        D_PrintHex<uint8_t > (hcibuf[4], 0x80);
-//                                        Notify(PSTR(" "), 0x80);
-//                                        D_PrintHex<uint8_t > (hcibuf[5], 0x80);
+/*
+                                        Notify(PSTR("\r\nNum HCI Command Packets: "), 0x80);
+                                        D_PrintHex<uint8_t > (hcibuf[3], 0x80);
+                                        Notify(PSTR("\r\nCommand Opcode: "), 0x80);
+                                        D_PrintHex<uint8_t > (hcibuf[4], 0x80);
+                                        Notify(PSTR(" "), 0x80);
+                                        D_PrintHex<uint8_t > (hcibuf[5], 0x80);
+*/
 #endif
                                 }
                                 break;
@@ -1119,7 +1121,7 @@ void BTDSSP::HCI_task() {
                                 hci_counter = 0;
                                 hci_state = HCI_DISCONNECT_STATE;
 #ifdef DEBUG_USB_HOST
-                                Notify(PSTR("\r\nHCI_DONE_STATE: >>> HCI_DISCONNECT_STATE:"), 0x80);
+                                Notify(PSTR("\r\nHCI_DONE_STATE: >>> HCI_DISCONNECT_STATE:(stay unless disconnected)"), 0x80);
 #endif
                         }
                         break;
