@@ -49,8 +49,8 @@ XB1SBTS Xb1s(&Btdssp);
 #define BT_PAIRING_WAIT   2
 
 
-const int extBtnPin = 2; // the number of the External Button pin. In this example, the button (switch) is connected to pin2 and ground.
-const int extLedPin = 3; // the number of the External LED pin. In this example, the LED is connected to pin3 and ground via resistor. 
+const int extBtnPin = 2; // the number of the External Button pin. In this example, the button (switch) is connected to digitalPin2 and ground.
+const int extLedPin = 3; // the number of the External LED pin. In this example, the LED is connected to digitalPin3 and ground via resistor. 
 
 int ledStatus = BLINK_SLOW;
 
