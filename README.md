@@ -84,7 +84,7 @@ SSP のリンクキーを保存するので、再接続等が確実になって�
 
 ### Nintendo Switch Pro コントローラー
 
-暫定版です。コントローラーの基本の情報の受信のみです。初期化や振動やジャイロ等には対応していません（サブコマンドを入れていません）
+サブコマンドの送信を組み込んだので、振動を暫定的に入れてみました。ジャイロは対応するか未定です（2021/04/04）
 
 ## 参考にさせて頂いたプロジェクトやWEBサイト
 <https://github.com/felis/USB_Host_Shield_2.0>：USB_Host_Shield_2.0 の本家
@@ -100,4 +100,4 @@ SSP のリンクキーを保存するので、再接続等が確実になって�
 <https://github.com/dekuNukem/Nintendo_Switch_Reverse_Engineering>：Nintendo_Switch_Reverse_Engineering
 
 その他、思いついたら追加します。
-こうして作ることが出来たのも、みなさんのおかげです。
+こうして作ることが出来たのも、みなさんのおかげです。本当にありがとうございます。
