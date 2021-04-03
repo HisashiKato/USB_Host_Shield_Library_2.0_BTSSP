@@ -66,12 +66,18 @@ protected:
          */
         virtual void OnInitBTHIDs() {
                 SWProBTParser::Reset();
+                SWProBTParser::Init();
         };
 
         /** Used to reset the different buffers to there default values */
         virtual void ResetBTHIDs() {
                 SWProBTParser::Reset();
         };
+
+        virtual void sendReport(uint8_t *data, uint8_t datasize) {
+                BTHIDs::sendReport(data, datasize);
+        };
+
         /**@}*/
 
 

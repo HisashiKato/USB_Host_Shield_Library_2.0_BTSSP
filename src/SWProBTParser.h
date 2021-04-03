@@ -14,7 +14,7 @@
  Web      :  http://www.tkjelectronics.com
  e-mail   :  kristianl@tkjelectronics.com
  
- Modified 26 Feb 2021 by HisashiKato
+ Modified 4 Apr 2021 by HisashiKato
  Web      :  http://kato-h.cocolog-nifty.com/khweblog/
 */
 
@@ -22,7 +22,7 @@
 #define _swprobtparser_h_
 
 #include "Usb.h"
-
+#include "BTHIDs.h"
 
 enum JoystickEnum {
         STICK_LX, //X_Axis     // left_stick_x
@@ -61,6 +61,8 @@ enum ButtonEnum {
         HOME,
         CAPTURE
 };
+
+
 
 
 const uint16_t BUTTONMASK[] PROGMEM = {
@@ -104,7 +106,7 @@ union SWProBTButtons {
                 uint8_t plus : 1;
                 uint8_t ls : 1;
                 uint8_t rs : 1;
-                uint8_t homeb : 1;
+                uint8_t home : 1;
                 uint8_t capture : 1;
                 uint8_t dummy_1 : 2; //Not used in Pro Controller
         } __attribute__((packed));
@@ -121,6 +123,37 @@ struct SWProBTReceivedData {
         uint16_t joystick[4]; // buf 4 - 11
 } __attribute__((packed));
 
+//-----------------------------------
+
+//#define BT_HIDP_SW_SUBCMD_ACK 0x21
+struct SWProBTReceivedSubCommandAck {
+        uint8_t replyData[13];
+        uint8_t replySubCommand;
+        uint8_t replySubCommandData[34];
+} __attribute__((packed));
+
+
+
+
+struct SWProBTSendConfigData {
+        uint8_t gpnum;
+        uint8_t rumbleDataL[4];
+        uint8_t rumbleDataR[4];
+        uint8_t subCommand;
+        uint8_t subCommandData[38];
+} __attribute__((packed));
+
+
+// The nameric value of rumble is based on the project of "BlueRetro".
+// https://hackaday.io/project/170365-blueretro
+//static const uint8_t sw_rumble_on[] = {0x28, 0x88, 0x60, 0x61, 0x28, 0x88, 0x60, 0x61};
+//static const uint8_t sw_rumble_off[] = {0x00, 0x01, 0x40, 0x40, 0x00, 0x01, 0x40, 0x40};
+
+const uint8_t sw_rumble_on[4] = {0x28, 0x88, 0x60, 0x61};
+const uint8_t sw_rumble_off[4] = {0x00, 0x01, 0x40, 0x40};
+
+
+//-----------------------------------
 
 
 
@@ -160,6 +193,10 @@ public:
 
 
 
+        void simpleRumbleL(bool l);
+        void simpleRumbleR(bool r);
+
+
         /**@}*/
 
 protected:
@@ -173,10 +210,25 @@ protected:
         /** Used to reset the different buffers to their default values */
         void Reset();
 
+        void Init();
+
+        virtual void sendReport(uint8_t *data, uint8_t datasize);
+
 
 private:
+        void sendConfigData(SWProBTSendConfigData *sendData);
         SWProBTReceivedData swprobtReceivedData;
         SWProBTButtons oldButtonState, buttonClickState;
         uint8_t pressedDpad;
+
+        SWProBTSendConfigData swprobtSendConfigData;
+        SWProBTReceivedSubCommandAck swprobtReceivedSubCommandAck;
+        uint8_t sw_gpnum = 0;
+
+        void setPlayerLED(uint8_t led);
+        void setSimpleRumble();
+        bool rumbleL = 0, rumbleR = 0;
+        bool oldRumbleL = 0, oldRumbleR = 0;
+
 };
 #endif

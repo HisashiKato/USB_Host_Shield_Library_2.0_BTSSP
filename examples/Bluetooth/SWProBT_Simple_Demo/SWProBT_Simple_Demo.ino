@@ -98,10 +98,23 @@ void loop() {
       Serial.print(F("\r\nLB"));
     if (SWPro.buttonClick(RB))
       Serial.print(F("\r\nRB"));
+
     if (SWPro.buttonClick(ZL))
       Serial.print(F("\r\nZL"));
+    if (SWPro.buttonData(ZL)) {
+      SWPro.simpleRumbleL(1);
+    }else{
+      SWPro.simpleRumbleL(0);
+    } 
+
     if (SWPro.buttonClick(ZR))
       Serial.print(F("\r\nZR"));
+    if (SWPro.buttonData(ZR)) {
+      SWPro.simpleRumbleR(1);
+    }else{
+      SWPro.simpleRumbleR(0);
+    } 
+
 
     if (SWPro.buttonClick(MINUS))
       Serial.print(F("\r\nMINUS"));
