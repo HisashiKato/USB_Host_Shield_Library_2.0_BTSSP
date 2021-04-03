@@ -154,9 +154,10 @@ void loop() {
     }     
 
 
-//    if (Xb1s.buttonClick(A)) {
-    if (Xb1s.buttonData(A)) {
+    if (Xb1s.buttonClick(A)) {
       Serial.print(F("\r\nA"));
+    }
+    if (Xb1s.buttonData(A)) {
       digitalWrite(extLedPin, HIGH);
     } else {
       digitalWrite(extLedPin, LOW);
