@@ -24,12 +24,12 @@
 //#define PRINTREPORT // Uncomment to print the report send by the XBOX ONE S Controller
 
 
-uint16_t XB1SBTParser::stickData(JoystickEnum a) {
+uint16_t XB1SBTParser::stickData(XB1S_JoystickEnum a) {
         return xb1sbtReceivedData.joystick[(uint8_t)a];
 }
 
 
-uint16_t XB1SBTParser::triggerData(TriggerEnum a) {
+uint16_t XB1SBTParser::triggerData(XB1S_TriggerEnum a) {
         return xb1sbtReceivedData.trigger[(uint8_t)a];
 }
 
@@ -38,10 +38,10 @@ uint8_t XB1SBTParser::dpadData() {
         return xb1sbtReceivedData.dpad;
 }
 
-bool XB1SBTParser::dpadClick(DpadEnum a) {
+bool XB1SBTParser::dpadClick(XB1S_DpadEnum a) {
         bool click = false;
         if(xb1sbtReceivedData.dpad == (uint8_t)a) {
-                if((pressedDpad != (uint8_t)a)||(pressedDpad == (uint8_t)DpadEnum::DPAD_NOT_PRESSED)) {
+                if((pressedDpad != (uint8_t)a)||(pressedDpad == (uint8_t)XB1S_DpadEnum::XB1S_DPAD_NOT_PRESSED)) {
                         click = true;
                         pressedDpad = (uint8_t)a;
                 }
@@ -50,12 +50,12 @@ bool XB1SBTParser::dpadClick(DpadEnum a) {
 }
 
 
-bool XB1SBTParser::buttonData(ButtonEnum b) {
-        return xb1sbtReceivedData.btn.value & pgm_read_dword(&BUTTONMASK[(uint8_t)b]);
+bool XB1SBTParser::buttonData(XB1S_ButtonEnum b) {
+        return xb1sbtReceivedData.btn.value & pgm_read_dword(&XB1SBTBUTTONMASK[(uint8_t)b]);
 }
 
-bool XB1SBTParser::buttonClick(ButtonEnum b) {
-        uint32_t mask = pgm_read_dword(&BUTTONMASK[(uint8_t)b]);
+bool XB1SBTParser::buttonClick(XB1S_ButtonEnum b) {
+        uint32_t mask = pgm_read_dword(&XB1SBTBUTTONMASK[(uint8_t)b]);
         bool click = buttonClickState.value & mask;
         buttonClickState.value &= ~mask; // Clear "click" event
         return click;
@@ -88,8 +88,8 @@ void XB1SBTParser::Parse(uint8_t len, uint8_t *buf) {
                                 oldButtonState.value = xb1sbtReceivedData.btn.value;
                         }
                         //dpadcheck
-                        if (xb1sbtReceivedData.dpad == (uint8_t)DpadEnum::DPAD_NOT_PRESSED) {
-                                pressedDpad = (uint8_t)DpadEnum::DPAD_NOT_PRESSED;
+                        if (xb1sbtReceivedData.dpad == (uint8_t)XB1S_DpadEnum::XB1S_DPAD_NOT_PRESSED) {
+                                pressedDpad = (uint8_t)XB1S_DpadEnum::XB1S_DPAD_NOT_PRESSED;
                         }
 
                 } else if (buf[0] == 0x02) { // This report contains the Xbox button
@@ -118,8 +118,8 @@ void XB1SBTParser::Reset() {
                 xb1sbtReceivedData.joystick[i] = 32767; // Center value
         for (uint8_t i = 0; i < 2; i++)
                 xb1sbtReceivedData.trigger[i] = 0;
-        xb1sbtReceivedData.dpad = (uint8_t)DpadEnum::DPAD_NOT_PRESSED;
-        pressedDpad = (uint8_t)DpadEnum::DPAD_NOT_PRESSED;
+        xb1sbtReceivedData.dpad = (uint8_t)XB1S_DpadEnum::XB1S_DPAD_NOT_PRESSED;
+        pressedDpad = (uint8_t)XB1S_DpadEnum::XB1S_DPAD_NOT_PRESSED;
         xb1sbtReceivedData.btn.value = 0;
         oldButtonState.value = 0;
         xb1sbtBatteryStatus.data = 0;

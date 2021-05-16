@@ -24,48 +24,47 @@
 #include "Usb.h"
 #include "BTHIDs.h"
 
-enum JoystickEnum {
-        STICK_LX, //X_Axis     // left_stick_x
-        STICK_LY, //Y_Axis     // left_stick_y
-        STICK_RX, //X_Rotation // right_stick_x
-        STICK_RY  //Y_Rotation // right_stick_y
+enum SWPro_JoystickEnum {
+        SWPro_STICK_LX, //X_Axis     // left_stick_x
+        SWPro_STICK_LY, //Y_Axis     // left_stick_y
+        SWPro_STICK_RX, //X_Rotation // right_stick_x
+        SWPro_STICK_RY  //Y_Rotation // right_stick_y
 };
 
-enum DpadEnum {
+enum SWPro_DpadEnum {
         /** Pro Controller Dpad Enum */
-        DPAD_UP = 0x00,
-        DPAD_UP_RIGHT = 0x01,
-        DPAD_RIGHT = 0x02,
-        DPAD_RIGHT_DOWN = 0x03,
-        DPAD_DOWN = 0x04,
-        DPAD_DOWN_LEFT = 0x05,
-        DPAD_LEFT = 0x06,
-        DPAD_LEFT_UP = 0x07,
-        DPAD_NOT_PRESSED = 0x08
+        SWPro_DPAD_UP = 0x00,
+        SWPro_DPAD_UP_RIGHT = 0x01,
+        SWPro_DPAD_RIGHT = 0x02,
+        SWPro_DPAD_RIGHT_DOWN = 0x03,
+        SWPro_DPAD_DOWN = 0x04,
+        SWPro_DPAD_DOWN_LEFT = 0x05,
+        SWPro_DPAD_LEFT = 0x06,
+        SWPro_DPAD_LEFT_UP = 0x07,
+        SWPro_DPAD_NOT_PRESSED = 0x08
 };
 
-enum ButtonEnum {
+enum SWPro_ButtonEnum {
         /** Pro Controller buttons Enum */
-        B,
-        A,
-        Y,
-        X,
-        LB,
-        RB,
-        ZL,
-        ZR,
-        MINUS,
-        PLUS,
-        LS,
-        RS,
-        HOME,
-        CAPTURE
+        SWPro_B,
+        SWPro_A,
+        SWPro_Y,
+        SWPro_X,
+        SWPro_LB,
+        SWPro_RB,
+        SWPro_ZL,
+        SWPro_ZR,
+        SWPro_MINUS,
+        SWPro_PLUS,
+        SWPro_LS,
+        SWPro_RS,
+        SWPro_HOME,
+        SWPro_CAPTURE
 };
 
 
 
-
-const uint16_t BUTTONMASK[] PROGMEM = {
+const uint16_t SWProBUTTONMASK[] PROGMEM = {
         /* Nintendo Switch Pro Controller */
                        //buf  1  2
         0x0001, // B       //01 00
@@ -171,12 +170,12 @@ public:
          * @param  a  ::STICK_LX, ::STICK_LY, ::STICK_RX, and ::STICK_RY.
          * @return    Return the analog value in the range of 0-65535.
          */
-        uint16_t stickData(JoystickEnum a);
+        uint16_t stickData(SWPro_JoystickEnum a);
 
 
         uint8_t dpadData();
 
-        bool dpadClick(DpadEnum a);
+        bool dpadClick(SWPro_DpadEnum a);
 
         /**
          * buttonData(ButtonEnum b) will return true as long as the button is held down.
@@ -188,8 +187,8 @@ public:
          * @param  b          ::ButtonEnum to read.
          * @return            buttonData(ButtonEnum b) will return a true as long as a button is held down, while buttonClick(ButtonEnum b) will return true once for each button press.
          */
-        bool buttonData(ButtonEnum b);
-        bool buttonClick(ButtonEnum b);
+        bool buttonData(SWPro_ButtonEnum b);
+        bool buttonClick(SWPro_ButtonEnum b);
 
 
 

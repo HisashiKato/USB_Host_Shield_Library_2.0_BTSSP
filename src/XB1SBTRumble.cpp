@@ -30,77 +30,77 @@
 
 void XB1SBTRumble::rumbleInit() {
         Reset();
-        sendRumbleData(&xb1sbtRumbleData);
+        sendRumbleData(&xb1sRumbleData);
 }
 
 
-void XB1SBTRumble::rumbleEnable(RumbleMotorsEnableEnum a) {
+void XB1SBTRumble::rumbleEnable(XB1S_RumbleMotorsEnableEnum a) {
         if(oldRumbleData.motorEnable != (uint8_t)a){
-                xb1sbtRumbleData.motorEnable = (uint8_t)a;
+                xb1sRumbleData.motorEnable = (uint8_t)a;
                 
-                sendRumbleData(&xb1sbtRumbleData);
+                sendRumbleData(&xb1sRumbleData);
                 
-                oldRumbleData.motorEnable = xb1sbtRumbleData.motorEnable;
+                oldRumbleData.motorEnable = xb1sRumbleData.motorEnable;
         }
 }
 
 
 void XB1SBTRumble::rumble(uint8_t maglt, uint8_t magrt, uint8_t magls, uint8_t magrw) {
 
-        xb1sbtRumbleData.mag.leftTrigger = maglt;
-        xb1sbtRumbleData.mag.rightTrigger = magrt;
-        xb1sbtRumbleData.mag.leftStrong = magls;
-        xb1sbtRumbleData.mag.rightWeak = magrw;
+        xb1sRumbleData.mag.leftTrigger = maglt;
+        xb1sRumbleData.mag.rightTrigger = magrt;
+        xb1sRumbleData.mag.leftStrong = magls;
+        xb1sRumbleData.mag.rightWeak = magrw;
 
-        if(oldRumbleData.mag.value != xb1sbtRumbleData.mag.value){
+        if(oldRumbleData.mag.value != xb1sRumbleData.mag.value){
                 
-                sendRumbleData(&xb1sbtRumbleData);
+                sendRumbleData(&xb1sRumbleData);
                 
-                oldRumbleData.mag.value = xb1sbtRumbleData.mag.value;
+                oldRumbleData.mag.value = xb1sRumbleData.mag.value;
         }
 }
 
 
-void XB1SBTRumble::rumblePulseEnable(RumbleMotorsEnableEnum a) {
+void XB1SBTRumble::rumblePulseEnable(XB1S_RumbleMotorsEnableEnum a) {
 
-        xb1sbtRumblePluse.motorEnable = (uint8_t)a;
+        xb1sRumblePluse.motorEnable = (uint8_t)a;
 }
 
 
 void XB1SBTRumble::rumblePulseMagSet(uint8_t maglt, uint8_t magrt, uint8_t magls, uint8_t magrw) {
 
-        xb1sbtRumblePluse.mag.leftTrigger = maglt;
-        xb1sbtRumblePluse.mag.rightTrigger = magrt;
-        xb1sbtRumblePluse.mag.leftStrong = magls;
-        xb1sbtRumblePluse.mag.rightWeak = magrw;
+        xb1sRumblePluse.mag.leftTrigger = maglt;
+        xb1sRumblePluse.mag.rightTrigger = magrt;
+        xb1sRumblePluse.mag.leftStrong = magls;
+        xb1sRumblePluse.mag.rightWeak = magrw;
 
 }
 
 void XB1SBTRumble::rumblePulseLoopSet(uint8_t plsduration, uint8_t plsdelay, uint8_t loopcnt) {
 
-        xb1sbtRumblePluse.pulseDuration = plsduration;
-        xb1sbtRumblePluse.pulseDelay = plsdelay;
-        xb1sbtRumblePluse.loopCount = loopcnt;
+        xb1sRumblePluse.pulseDuration = plsduration;
+        xb1sRumblePluse.pulseDelay = plsdelay;
+        xb1sRumblePluse.loopCount = loopcnt;
 
 }
 
 
 void XB1SBTRumble::rumblePulseStart() {
 
-        sendRumbleData(&xb1sbtRumblePluse);
+        sendRumbleData(&xb1sRumblePluse);
 
 }
 
 
 void XB1SBTRumble::rumbleStopAll() {
 
-        xb1sbtRumbleData.motorEnable = RUMBLE_ALL;
-        xb1sbtRumbleData.mag.value = 0;
-        xb1sbtRumbleData.pulseDuration = 0;
-        xb1sbtRumbleData.pulseDelay = 0;
-        xb1sbtRumbleData.loopCount = 0;
+        xb1sRumbleData.motorEnable = XB1S_RUMBLE_ALL;
+        xb1sRumbleData.mag.value = 0;
+        xb1sRumbleData.pulseDuration = 0;
+        xb1sRumbleData.pulseDelay = 0;
+        xb1sRumbleData.loopCount = 0;
 
-        sendRumbleData(&xb1sbtRumbleData);
+        sendRumbleData(&xb1sRumbleData);
 
         Reset();
 }
@@ -109,21 +109,21 @@ void XB1SBTRumble::rumbleTest(uint8_t m,
                               uint8_t maglt, uint8_t magrt, uint8_t magls, uint8_t magrw,
                               uint8_t plsduration, uint8_t plsdelay, uint8_t loopcnt) {
 
-        xb1sbtRumbleData.motorEnable = m;
-        xb1sbtRumbleData.mag.leftTrigger = maglt;
-        xb1sbtRumbleData.mag.rightTrigger = magrt;
-        xb1sbtRumbleData.mag.leftStrong = magls;
-        xb1sbtRumbleData.mag.rightWeak = magrw;
-        xb1sbtRumbleData.pulseDuration = plsduration;
-        xb1sbtRumbleData.pulseDelay = plsdelay;
-        xb1sbtRumbleData.loopCount = loopcnt;
+        xb1sRumbleData.motorEnable = m;
+        xb1sRumbleData.mag.leftTrigger = maglt;
+        xb1sRumbleData.mag.rightTrigger = magrt;
+        xb1sRumbleData.mag.leftStrong = magls;
+        xb1sRumbleData.mag.rightWeak = magrw;
+        xb1sRumbleData.pulseDuration = plsduration;
+        xb1sRumbleData.pulseDelay = plsdelay;
+        xb1sRumbleData.loopCount = loopcnt;
 
-        sendRumbleData(&xb1sbtRumbleData);
+        sendRumbleData(&xb1sRumbleData);
 }
 
 
 
-void XB1SBTRumble::sendRumbleData(XB1SBTRumbleData *sendData) {
+void XB1SBTRumble::sendRumbleData(XB1SRumbleData *sendData) {
         uint8_t len = XB1S_RUMBLE_REPORT_SIZE + 2;
         uint8_t buf[len];
         buf[0] = 0xA2;                  // HID BT DATA (0xA0) | Report Type (Output 0x02)
@@ -143,11 +143,11 @@ void XB1SBTRumble::sendRumbleData(XB1SBTRumbleData *sendData) {
 
 
 void XB1SBTRumble::Reset() {
-        xb1sbtRumbleData.motorEnable = RUMBLE_ALL;
-        xb1sbtRumbleData.mag.value = 0;
-        xb1sbtRumbleData.pulseDuration = 0xFF;
-        xb1sbtRumbleData.pulseDelay = 0;
-        xb1sbtRumbleData.loopCount = 0xEB;
+        xb1sRumbleData.motorEnable = XB1S_RUMBLE_ALL;
+        xb1sRumbleData.mag.value = 0;
+        xb1sRumbleData.pulseDuration = 0xFF;
+        xb1sRumbleData.pulseDelay = 0;
+        xb1sRumbleData.loopCount = 0xEB;
 
-        oldRumbleData = xb1sbtRumbleData;
+        oldRumbleData = xb1sRumbleData;
 }

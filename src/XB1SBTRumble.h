@@ -25,20 +25,20 @@
 
 
 // rumble motors enable bits
-enum RumbleMotorsEnableEnum {
-        RUMBLE_NONE = 0b0000,          // 0x00
-        RUMBLE_RIGHT_WEAK = 0b0001,    // 0x01
-        RUMBLE_LEFT_STRONG = 0b0010,   // 0x02
-        RUMBLE_MAIN_ONLY = 0b0011,     // LEFT_STRONG | RIGHT_WEAK
+enum XB1S_RumbleMotorsEnableEnum {
+        XB1S_RUMBLE_NONE = 0b0000,          // 0x00
+        XB1S_RUMBLE_RIGHT_WEAK = 0b0001,    // 0x01
+        XB1S_RUMBLE_LEFT_STRONG = 0b0010,   // 0x02
+        XB1S_RUMBLE_MAIN_ONLY = 0b0011,     // LEFT_STRONG | RIGHT_WEAK
 
-        RUMBLE_RIGHT_TRIGGER = 0b0100, // 0x04
-        RUMBLE_LEFT_TRIGGER = 0b1000,  // 0x08
-        RUMBLE_TRIGGER_ONLY = 0b1100,  // LEFT_TRIGGER | RIGHT_TRIGGER
+        XB1S_RUMBLE_RIGHT_TRIGGER = 0b0100, // 0x04
+        XB1S_RUMBLE_LEFT_TRIGGER = 0b1000,  // 0x08
+        XB1S_RUMBLE_TRIGGER_ONLY = 0b1100,  // LEFT_TRIGGER | RIGHT_TRIGGER
 
-        RUMBLE_RIGHT_ONLY = 0b0101,    // RIGHT_TRIGGER | RIGHT_WEAK
-        RUMBLE_LEFT_ONLY = 0b1010,     // LEFT_TRIGGER | LEFT_STRONG
+        XB1S_RUMBLE_RIGHT_ONLY = 0b0101,    // RIGHT_TRIGGER | RIGHT_WEAK
+        XB1S_RUMBLE_LEFT_ONLY = 0b1010,     // LEFT_TRIGGER | LEFT_STRONG
 
-        RUMBLE_ALL = 0b1111            // 0x0F
+        XB1S_RUMBLE_ALL = 0b1111            // 0x0F
 };
 
 
@@ -56,7 +56,7 @@ union RumbleMagnitude {
 } __attribute__((packed));
 
 
-struct XB1SBTRumbleData {
+struct XB1SRumbleData {
         uint8_t motorEnable;
         RumbleMagnitude mag;
         uint8_t pulseDuration; //sustain
@@ -71,11 +71,11 @@ public:
 
         void rumbleInit();
 
-        void rumbleEnable(RumbleMotorsEnableEnum a);
+        void rumbleEnable(XB1S_RumbleMotorsEnableEnum a);
 
         void rumble(uint8_t maglt, uint8_t magrt, uint8_t magls, uint8_t magrw);
 
-        void rumblePulseEnable(RumbleMotorsEnableEnum a);
+        void rumblePulseEnable(XB1S_RumbleMotorsEnableEnum a);
 
         void rumblePulseMagSet(uint8_t maglt, uint8_t magrt, uint8_t magls, uint8_t magrw);
 
@@ -89,7 +89,7 @@ public:
                         uint8_t maglt, uint8_t magrt, uint8_t magls, uint8_t magrw,
                         uint8_t plsduration, uint8_t plsdelay, uint8_t loopcnt);
 
-        void sendRumbleData(XB1SBTRumbleData *sendData);
+        void sendRumbleData(XB1SRumbleData *sendData);
 
 
 protected:
@@ -105,6 +105,6 @@ protected:
 
 
 private:
-        XB1SBTRumbleData xb1sbtRumbleData,xb1sbtRumblePluse,oldRumbleData;
+        XB1SRumbleData xb1sRumbleData,xb1sRumblePluse,oldRumbleData;
 };
 #endif
