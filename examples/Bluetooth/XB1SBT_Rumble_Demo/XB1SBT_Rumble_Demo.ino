@@ -13,12 +13,17 @@
  Be careful when using the Rumble function.
  It will be crashed depending on how it is used. 
 
- How to use Rumble Pulse Demo.
- 1.Press D-pad or X to set for enable rumble motors.
- 2.Press A or B for choice rumble pulse demo pattern.
- 3.Press RB to start.
+ 
+How to use Rumble Demo.
+ 1.Press D-pad or X to set enable rumble motors.
+  (Press X is set to enable all rumble motors)
+ 2.Press LB to rumble enabled motors.
+ 3.Press LT or RT to rumble Leftside or Rightside motors.
 
- If the rumble malfunctioned, press Y to stop rumble.   
+ 2b.Press A or B for choice rumble pulse demo pattern.
+ 3b.Press RB to start rumble demo pattern.
+
+ If the rumble malfunctioned, press Y to stop rumble and init.   
  If it still doesn't stop, Please reset or remove battery cell. 
 
 */
@@ -101,43 +106,51 @@ void loop() {
 
     if (Xb1s.dpadClick(DPAD_UP)) {
       Serial.print(F("\r\nDPAD_UP"));
+      Xb1s.rumbleEnable(RUMBLE_TRIGGER_ONLY);
       Xb1s.rumblePulseEnable(RUMBLE_TRIGGER_ONLY);
-      Serial.print(F("\r\nPulse_RUMBLE_TRIGGER_ONLY"));
+      Serial.print(F("\r\nRUMBLE_TRIGGER_ONLY"));
     }
     if (Xb1s.dpadClick(DPAD_UP_RIGHT)) {
       Serial.print(F("\r\nDPAD_UP_RIGHT"));
+      Xb1s.rumbleEnable(RUMBLE_RIGHT_TRIGGER);
       Xb1s.rumblePulseEnable(RUMBLE_RIGHT_TRIGGER);
-      Serial.print(F("\r\nPulse_RUMBLE_RIGHT_TRIGGER"));
+      Serial.print(F("\r\nRUMBLE_RIGHT_TRIGGER"));
     }
     if (Xb1s.dpadClick(DPAD_RIGHT)) {
       Serial.print(F("\r\nDPAD_RIGHT"));
+      Xb1s.rumbleEnable(RUMBLE_RIGHT_ONLY);
       Xb1s.rumblePulseEnable(RUMBLE_RIGHT_ONLY);
-      Serial.print(F("\r\nPulse_RUMBLE_RIGHT_ONLY"));
+      Serial.print(F("\r\nRUMBLE_RIGHT_ONLY"));
     }
     if (Xb1s.dpadClick(DPAD_RIGHT_DOWN)) {
       Serial.print(F("\r\nDPAD_RIGHT_DOWN"));
+      Xb1s.rumbleEnable(RUMBLE_RIGHT_WEAK);
       Xb1s.rumblePulseEnable(RUMBLE_RIGHT_WEAK);
-      Serial.print(F("\r\nPulse_RUMBLE_RIGHT_WEAK"));
+      Serial.print(F("\r\nRUMBLE_RIGHT_WEAK"));
     }
     if (Xb1s.dpadClick(DPAD_DOWN)) {
       Serial.print(F("\r\nDPAD_DOWN"));
+      Xb1s.rumbleEnable(RUMBLE_MAIN_ONLY);
       Xb1s.rumblePulseEnable(RUMBLE_MAIN_ONLY);
-      Serial.print(F("\r\nPulse_RUMBLE_MAIN_ONLY"));
+      Serial.print(F("\r\nRUMBLE_MAIN_ONLY"));
     }
     if (Xb1s.dpadClick(DPAD_DOWN_LEFT)) {
       Serial.print(F("\r\nDPAD_DOWN_LEFT"));
+      Xb1s.rumbleEnable(RUMBLE_LEFT_STRONG);
       Xb1s.rumblePulseEnable(RUMBLE_LEFT_STRONG);
-      Serial.print(F("\r\nPulse_RUMBLE_LEFT_STRONG"));
+      Serial.print(F("\r\nRUMBLE_LEFT_STRONG"));
     }
     if (Xb1s.dpadClick(DPAD_LEFT)) {
       Serial.print(F("\r\nDPAD_LEFT"));
+      Xb1s.rumbleEnable(RUMBLE_LEFT_ONLY);
       Xb1s.rumblePulseEnable(RUMBLE_LEFT_ONLY);
-      Serial.print(F("\r\nPulse_RUMBLE_LEFT_ONLY"));
+      Serial.print(F("\r\nRUMBLE_LEFT_ONLY"));
     }
     if (Xb1s.dpadClick(DPAD_LEFT_UP)) {
       Serial.print(F("\r\nDPAD_LEFT_UP"));
+      Xb1s.rumbleEnable(RUMBLE_LEFT_TRIGGER);
       Xb1s.rumblePulseEnable(RUMBLE_LEFT_TRIGGER);
-      Serial.print(F("\r\nPulse_RUMBLE_LEFT_TRIGGER"));
+      Serial.print(F("\r\nRUMBLE_LEFT_TRIGGER"));
     }     
 
 
@@ -155,8 +168,9 @@ void loop() {
     }
     if (Xb1s.buttonClick(X)) {
       Serial.print(F("\r\nX"));
+      Xb1s.rumbleEnable(RUMBLE_ALL);
       Xb1s.rumblePulseEnable(RUMBLE_ALL);
-      Serial.print(F("\r\nPulse_RUMBLE_ALL"));
+      Serial.print(F("\r\nRUMBLE_ALL"));
     }
     if (Xb1s.buttonClick(Y)) {
       Serial.print(F("\r\nY"));
