@@ -30,7 +30,7 @@ USB_Host_Shield_Library_2.0_BTXBOX リポジトリ
 　  
 
 ## ハードウェア
-* Arduino 及び、その互換機  
+* Arduino 及び、その互換機（但し、Arduino の EEPROMライブラリ が使えるボードのみ）  
 * USB Host Shield　2.0  
 * Bluetooth 4.0 USBアダプタ
 
