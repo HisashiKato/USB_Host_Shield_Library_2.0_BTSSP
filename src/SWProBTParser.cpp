@@ -49,7 +49,7 @@ uint8_t SWProBTParser::dpadData() {
 bool SWProBTParser::dpadClick(SWPro_DpadEnum a){
         bool click = false;
         if(swprobtReceivedData.dpad == (uint8_t)a){
-                if((pressedDpad != (uint8_t)a)||(pressedDpad == (uint8_t)SWPro_DpadEnum::SWPro_DPAD_NOT_PRESSED)){
+                if((pressedDpad != (uint8_t)a)||(pressedDpad == (uint8_t)SWPro_DpadEnum::DPAD_NOT_PRESSED)){
                         click = true;
                         pressedDpad = (uint8_t)a;
                 }
@@ -89,8 +89,8 @@ void SWProBTParser::Parse(uint8_t len, uint8_t *buf) {
                                 oldButtonState.value = swprobtReceivedData.btn.value;
                         }
                         //dpadcheck
-                        if (swprobtReceivedData.dpad == (uint8_t)SWPro_DpadEnum::SWPro_DPAD_NOT_PRESSED) {
-                                pressedDpad = (uint8_t)SWPro_DpadEnum::SWPro_DPAD_NOT_PRESSED;
+                        if (swprobtReceivedData.dpad == (uint8_t)SWPro_DpadEnum::DPAD_NOT_PRESSED) {
+                                pressedDpad = (uint8_t)SWPro_DpadEnum::DPAD_NOT_PRESSED;
                         }
 
                 } else if (buf[0] == SWProBT_SUBCMD_ACK) { // ID 0x21 
@@ -209,8 +209,8 @@ void SWProBTParser::Init() {
 void SWProBTParser::Reset() {
         for (uint8_t i = 0; i < 4; i++)
                 swprobtReceivedData.joystick[i] = 32767; // Center value
-        swprobtReceivedData.dpad = (uint8_t)SWPro_DpadEnum::SWPro_DPAD_NOT_PRESSED;
-        pressedDpad = (uint8_t)SWPro_DpadEnum::SWPro_DPAD_NOT_PRESSED;
+        swprobtReceivedData.dpad = (uint8_t)SWPro_DpadEnum::DPAD_NOT_PRESSED;
+        pressedDpad = (uint8_t)SWPro_DpadEnum::DPAD_NOT_PRESSED;
         swprobtReceivedData.btn.value = 0;
 }
 

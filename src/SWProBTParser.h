@@ -25,41 +25,41 @@
 #include "BTHIDs.h"
 
 enum SWPro_JoystickEnum {
-        SWPro_STICK_LX, //X_Axis     // left_stick_x
-        SWPro_STICK_LY, //Y_Axis     // left_stick_y
-        SWPro_STICK_RX, //X_Rotation // right_stick_x
-        SWPro_STICK_RY  //Y_Rotation // right_stick_y
+        STICK_LX, //X_Axis     // left_stick_x
+        STICK_LY, //Y_Axis     // left_stick_y
+        STICK_RX, //X_Rotation // right_stick_x
+        STICK_RY  //Y_Rotation // right_stick_y
 };
 
 enum SWPro_DpadEnum {
         /** Pro Controller Dpad Enum */
-        SWPro_DPAD_UP = 0x00,
-        SWPro_DPAD_UP_RIGHT = 0x01,
-        SWPro_DPAD_RIGHT = 0x02,
-        SWPro_DPAD_RIGHT_DOWN = 0x03,
-        SWPro_DPAD_DOWN = 0x04,
-        SWPro_DPAD_DOWN_LEFT = 0x05,
-        SWPro_DPAD_LEFT = 0x06,
-        SWPro_DPAD_LEFT_UP = 0x07,
-        SWPro_DPAD_NOT_PRESSED = 0x08
+        DPAD_UP = 0x00,
+        DPAD_UP_RIGHT = 0x01,
+        DPAD_RIGHT = 0x02,
+        DPAD_RIGHT_DOWN = 0x03,
+        DPAD_DOWN = 0x04,
+        DPAD_DOWN_LEFT = 0x05,
+        DPAD_LEFT = 0x06,
+        DPAD_LEFT_UP = 0x07,
+        DPAD_NOT_PRESSED = 0x08
 };
 
 enum SWPro_ButtonEnum {
         /** Pro Controller buttons Enum */
-        SWPro_B,
-        SWPro_A,
-        SWPro_Y,
-        SWPro_X,
-        SWPro_LB,
-        SWPro_RB,
-        SWPro_ZL,
-        SWPro_ZR,
-        SWPro_MINUS,
-        SWPro_PLUS,
-        SWPro_LS,
-        SWPro_RS,
-        SWPro_HOME,
-        SWPro_CAPTURE
+        B,
+        A,
+        Y,
+        X,
+        LB,
+        RB,
+        ZL,
+        ZR,
+        MINUS,
+        PLUS,
+        LS,
+        RS,
+        HOME,
+        CAPTURE
 };
 
 

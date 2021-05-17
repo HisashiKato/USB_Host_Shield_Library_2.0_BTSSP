@@ -25,43 +25,43 @@
 
 
 enum XB1S_JoystickEnum {
-        XB1S_STICK_LX, //X_Axis     // left_stick_x
-        XB1S_STICK_LY, //Y_Axis     // left_stick_y
-        XB1S_STICK_RX, //X_Rotation // right_stick_x
-        XB1S_STICK_RY  //Y_Rotation // right_stick_y
+        STICK_LX, //X_Axis     // left_stick_x
+        STICK_LY, //Y_Axis     // left_stick_y
+        STICK_RX, //X_Rotation // right_stick_x
+        STICK_RY  //Y_Rotation // right_stick_y
 };
 
 enum XB1S_TriggerEnum {
-        XB1S_LT, //Z_Axis     //trigger_left
-        XB1S_RT  //Z_Rotation //trigger_right
+        LT, //Z_Axis     //trigger_left
+        RT  //Z_Rotation //trigger_right
 };
 
 enum XB1S_DpadEnum {
         /** Xbox One S Dpad Enum */
-        XB1S_DPAD_NOT_PRESSED = 0x00,
-        XB1S_DPAD_UP = 0x01,
-        XB1S_DPAD_UP_RIGHT = 0x02,
-        XB1S_DPAD_RIGHT = 0x03,
-        XB1S_DPAD_RIGHT_DOWN = 0x04,
-        XB1S_DPAD_DOWN = 0x05,
-        XB1S_DPAD_DOWN_LEFT = 0x06,
-        XB1S_DPAD_LEFT = 0x07,
-        XB1S_DPAD_LEFT_UP = 0x08
+        DPAD_NOT_PRESSED = 0x00,
+        DPAD_UP = 0x01,
+        DPAD_UP_RIGHT = 0x02,
+        DPAD_RIGHT = 0x03,
+        DPAD_RIGHT_DOWN = 0x04,
+        DPAD_DOWN = 0x05,
+        DPAD_DOWN_LEFT = 0x06,
+        DPAD_LEFT = 0x07,
+        DPAD_LEFT_UP = 0x08
 };
 
 enum XB1S_ButtonEnum {
         /** Xbox One S buttons Enum */
-        XB1S_A,
-        XB1S_B,
-        XB1S_X,
-        XB1S_Y,
-        XB1S_LB,
-        XB1S_RB,
-        XB1S_VIEW,
-        XB1S_MENU,
-        XB1S_LS,
-        XB1S_RS,
-        XB1S_XBOX
+        A,
+        B,
+        X,
+        Y,
+        LB,
+        RB,
+        VIEW,
+        MENU,
+        LS,
+        RS,
+        XBOX
  };
 
 

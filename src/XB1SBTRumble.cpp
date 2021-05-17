@@ -94,7 +94,7 @@ void XB1SBTRumble::rumblePulseStart() {
 
 void XB1SBTRumble::rumbleStopAll() {
 
-        xb1sRumbleData.motorEnable = XB1S_RUMBLE_ALL;
+        xb1sRumbleData.motorEnable = RUMBLE_ALL;
         xb1sRumbleData.mag.value = 0;
         xb1sRumbleData.pulseDuration = 0;
         xb1sRumbleData.pulseDelay = 0;
@@ -143,7 +143,7 @@ void XB1SBTRumble::sendRumbleData(XB1SRumbleData *sendData) {
 
 
 void XB1SBTRumble::Reset() {
-        xb1sRumbleData.motorEnable = XB1S_RUMBLE_ALL;
+        xb1sRumbleData.motorEnable = RUMBLE_ALL;
         xb1sRumbleData.mag.value = 0;
         xb1sRumbleData.pulseDuration = 0xFF;
         xb1sRumbleData.pulseDelay = 0;
