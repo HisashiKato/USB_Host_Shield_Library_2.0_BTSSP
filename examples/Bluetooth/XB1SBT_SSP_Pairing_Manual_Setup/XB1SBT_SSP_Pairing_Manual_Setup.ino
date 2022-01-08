@@ -12,7 +12,6 @@
 
 #include <XB1SBTS.h>
 #include <usbhub.h>
-#include <EEPROM.h>
 
 // Satisfy the IDE, which needs to see the include statment in the ino too.
 #ifdef dobogusinclude
@@ -26,13 +25,21 @@
 // and write this sketch to the Arduino to enter the pairing state.
 //
 // Put the game controller into pairing mode.
-// Press the Xbox button to turn on the controller's power,
-// and hold down the Sync button at the some time,
-// the Xbox button will then start to blink quickly indicating that it is in pairing mode.
-// After about 15 seconds, if pairing is performed and successful, Xbox button will light on.
+// Press the Xbox button to turn on the controller's power, and hold down the Sync button
+// at the some time, the Xbox button will then start to blink quickly indicating that it
+// is in pairing mode.
+// If pairing is performed and successful, Xbox button will light on.
+// Then, the "Paired Device BD Address" and "Generated SSP Link Key" will be displayed on
+// the serial monitor.
+// Make a copy of the "Paired Device BD Address" and "Generated SSP Link Key", or write 
+// them down somewhere, and temporarily record them.
+// Each time a pairing is performed, a different Link Key is generated.
 //
-// After pairing is complete, add "//" to the "#define ENABLE_PAIR" line to
-// make it "//#define ENABLE_PAIR" and write this sketch to the "Arduino" again.
+// After pairing is completed, replace the "ssp_bdaddr[]" and "ssp_link_key[]" arrays in
+// the sketch with the "Paired Device BD Address" and "Generated SSP Link Key" that you
+// wrote down.
+// Then add "//" to the "#define ENABLE_PAIR" line to make it "//#define ENABLE_PAIR" and
+// write this sketch to the "Arduino" again.
 // After that, simply turn on power each other and they will be connected.
 //
 // (This used a translation site to translate it into English.)
@@ -43,15 +50,21 @@ USB Usb;
 BTDSSP Btdssp(&Usb); // You have to create the Bluetooth Dongle instance like so
 XB1SBTS Xb1s(&Btdssp);
 
-byte ssp_bdaddr[6];
-byte ssp_link_key[16];
-
 #ifdef ENABLE_PAIR
-bool stored_ssp_status = false;
+bool view_ssp_status = false;
+char ssp_bdaddr[]={"00:00:00:00:00:00"};
+char ssp_link_key[]={"00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00"};
+#else
+//Replace the contents of this array with the address and link key of the paired device.
+char ssp_bdaddr[]={"0A:1B:2C:3D:4E:5F"};
+char ssp_link_key[]={"00:11:22:33:44:55:66:77:88:99:AA:BB:CC:DD:EE:FF"};
 #endif
 
-
 void setup() {
+
+  Xb1s.setConnectAddress(ssp_bdaddr);
+  Xb1s.setPairedLinkkey(ssp_link_key);
+
   Serial.begin(115200);
 #if !defined(__MIPSEL__)
   while (!Serial); // Wait for serial port to connect - used on Leonardo, Teensy and other boards with built-in USB CDC serial connection
@@ -61,39 +74,10 @@ void setup() {
     while (1); // Halt
   }
   Serial.println(F("XB1S Bluetooth Library Started"));
-
 #ifdef ENABLE_PAIR
   Serial.println(F("Pairing is in progress."));
   Serial.println(F("Please enable pairing on your device."));
-#else
-  // Read SSP Data fron EEPROM.
-  for (int i = 0; i < 6; i++) {
-    ssp_bdaddr[i] = EEPROM.read(i);
-  }
-  for (int i = 0; i < 16; i++) {
-    ssp_link_key[i] = EEPROM.read(i + 6);
-  }
-  // Set SSP Data.
-  Xb1s.setConnectAddress(ssp_bdaddr);
-  Xb1s.setPairedLinkkey(ssp_link_key);
-
-  Serial.print("setConnectAddress ");
-  Serial.print(ssp_bdaddr[0],HEX);
-  for(int i = 1 ; i < 6; i++) {
-    Serial.print(":");
-    Serial.print(ssp_bdaddr[i],HEX);
-  }
-  Serial.println("");
-
-  Serial.print("setPairedLinkkey ");
-  Serial.print(ssp_link_key[0],HEX);
-  for(int i = 1 ; i < 16; i++) {
-    Serial.print(":");
-    Serial.print(ssp_link_key[i],HEX);
-  }
-  Serial.println("");
 #endif
-
 }
 
 void loop() {
@@ -101,41 +85,24 @@ void loop() {
   Usb.Task();
 
 #ifdef ENABLE_PAIR
-  if ((Xb1s.linkkeyNotification() == true)&&(stored_ssp_status == false)) {
-    // Get SSP Data.
-    Xb1s.getConnectedAddressHex(ssp_bdaddr);
-    Xb1s.getPairedLinkkeyHex(ssp_link_key);
-    // Write SSP Data to EEPROM.
-    for(uint8_t i = 0; i < 6; i++) {
-      EEPROM.write(i, ssp_bdaddr[i]);
-    }
-    for(uint8_t i = 0; i < 16; i++) {
-      EEPROM.write(i + 6, ssp_link_key[i]);
-    }
+  if ((Xb1s.linkkeyNotification() == true)&&(view_ssp_status == false)) {
 
     Serial.println("");
     Serial.print("connect Device Name ");
     Serial.println(Btdssp.remote_name);
 
-    Serial.print("Stored Connected BD Address to EEPROM.");
-    Serial.print(ssp_bdaddr[0],HEX);
-    for(int i = 1 ; i < 6; i++) {
-      Serial.print(":");
-      Serial.print(ssp_bdaddr[i],HEX);
-    }
-    Serial.println("");
-    Serial.print("Stored Generated SSP LinkKey to EEPROM.");
-    Serial.print(ssp_link_key[0],HEX);
-    for(int i = 1 ; i < 16; i++) {
-      Serial.print(":");
-      Serial.print(ssp_link_key[i],HEX);
-    }
+    Serial.print("Paired Device BD Address ");
+    Xb1s.getConnectedAddressStr(ssp_bdaddr);
+    Serial.println(ssp_bdaddr);
+
+    Serial.print("Generated SSP Link Key ");
+    Xb1s.getPairedLinkkeyStr(ssp_link_key);
+    Serial.println(ssp_link_key);
     Serial.println("");
 
-    stored_ssp_status = true;
+    view_ssp_status = true;
   }
 #endif
-
 
   if (Xb1s.connected()) {
     if (Xb1s.stickData(STICK_LX) > (32767+7680) || Xb1s.stickData(STICK_LX) < (32767-7680) || Xb1s.stickData(STICK_LY) > (32767+7680) || Xb1s.stickData(STICK_LY) < (32767-7680)) {

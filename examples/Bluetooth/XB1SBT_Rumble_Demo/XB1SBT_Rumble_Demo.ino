@@ -13,23 +13,19 @@
  Be careful when using the Rumble function.
  It will be crashed depending on how it is used. 
 
- 
-How to use Rumble Demo.
- 1.Press D-pad or X to set enable rumble motors.
-  (Press X is set to enable all rumble motors)
- 2.Press LB to rumble enabled motors.
- 3.Press LT or RT to rumble Leftside or Rightside motors.
+ How to use Rumble Pulse Demo.
+ 1.Press D-pad or X to set for enable rumble motors.
+ 2.Press A or B for choice rumble pulse demo pattern.
+ 3.Press RB to start.
 
- 2b.Press A or B for choice rumble pulse demo pattern.
- 3b.Press RB to start rumble demo pattern.
-
- If the rumble malfunctioned, press Y to stop rumble and init.   
+ If the rumble malfunctioned, press Y to stop rumble.   
  If it still doesn't stop, Please reset or remove battery cell. 
 
 */
 
 #include <XB1SBTR.h>
 #include <usbhub.h>
+#include <EEPROM.h>
 
 // Satisfy the IDE, which needs to see the include statment in the ino too.
 #ifdef dobogusinclude
@@ -37,19 +33,35 @@ How to use Rumble Demo.
 #endif
 #include <SPI.h>
 
+//#define ENABLE_PAIR
+
+// Remove "//" from the "//#define ENABLE_PAIR" line, enable "#define ENABLE_PAIR",
+// and write this sketch to the Arduino to enter the pairing state.
+//
+// Put the game controller into pairing mode.
+// Press the Xbox button to turn on the controller's power,
+// and hold down the Sync button at the some time,
+// the Xbox button will then start to blink quickly indicating that it is in pairing mode.
+// After about 15 seconds, if pairing is performed and successful, Xbox button will light on.
+//
+// After pairing is complete, add "//" to the "#define ENABLE_PAIR" line to
+// make it "//#define ENABLE_PAIR" and write this sketch to the "Arduino" again.
+// After that, simply turn on power each other and they will be connected.
+//
+// (This used a translation site to translate it into English.)
+
+
 USB Usb;
 //USBHub Hub1(&Usb); // Some dongles have a hub inside
 BTDSSP Btdssp(&Usb); // You have to create the Bluetooth Dongle instance like so
+XB1SBTR Xb1s(&Btdssp);
 
-/* You can create the instance of the XB1SBTR class in two ways */
-// This will start an inquiry and then pair with the XB1S controller - you only have to do this once
-// Press the Xbox button to turn on the power, 
-// and You will need to hold down the Sync button at the same time,
-// the Xbox button will then start to blink rapidly indicating that it is in pairing mode
-XB1SBTR Xb1s(&Btdssp, PAIR);
+byte ssp_bdaddr[6];
+byte ssp_link_key[16];
 
-// After that you can simply create the instance like so
-//XB1SBTR Xb1s(&Btdssp);
+#ifdef ENABLE_PAIR
+bool stored_ssp_status = false;
+#endif
 
 
 void setup() {
@@ -59,37 +71,108 @@ void setup() {
   while (!Serial); // Wait for serial port to connect - used on Leonardo, Teensy and other boards with built-in USB CDC serial connection
 #endif
   if (Usb.Init() == -1) {
-    Serial.print(F("\r\nOSC did not start"));
+    Serial.println(F("OSC did not start"));
     while (1); // Halt
   }
-  Serial.print(F("\r\nXb1s Bluetooth Library Started"));
+  Serial.println(F("XB1S Bluetooth Library Started"));
+
+
+#ifdef ENABLE_PAIR
+  Serial.println(F("Pairing is in progress."));
+  Serial.println(F("Please enable pairing on your device."));
+#else
+  // Read SSP Data fron EEPROM.
+  for (int i = 0; i < 6; i++) {
+    ssp_bdaddr[i] = EEPROM.read(i);
+  }
+  for (int i = 0; i < 16; i++) {
+    ssp_link_key[i] = EEPROM.read(i + 6);
+  }
+  // Set SSP Data.
+  Xb1s.setConnectAddress(ssp_bdaddr);
+  Xb1s.setPairedLinkkey(ssp_link_key);
+
+  Serial.print("setConnectAddress ");
+  Serial.print(ssp_bdaddr[0],HEX);
+  for(int i = 1 ; i < 6; i++) {
+    Serial.print(":");
+    Serial.print(ssp_bdaddr[i],HEX);
+  }
+  Serial.println("");
+
+  Serial.print("setPairedLinkkey ");
+  Serial.print(ssp_link_key[0],HEX);
+  for(int i = 1 ; i < 16; i++) {
+    Serial.print(":");
+    Serial.print(ssp_link_key[i],HEX);
+  }
+  Serial.println("");
+#endif
+
 }
 
 void loop() {
 
   Usb.Task();
 
+#ifdef ENABLE_PAIR
+  if ((Xb1s.linkkeyNotification() == true)&&(stored_ssp_status == false)) {
+    // Get SSP Data.
+    Xb1s.getConnectedAddressHex(ssp_bdaddr);
+    Xb1s.getPairedLinkkeyHex(ssp_link_key);
+    // Write SSP Data to EEPROM.
+    for(uint8_t i = 0; i < 6; i++) {
+      EEPROM.write(i, ssp_bdaddr[i]);
+    }
+    for(uint8_t i = 0; i < 16; i++) {
+      EEPROM.write(i + 6, ssp_link_key[i]);
+    }
+
+    Serial.println("");
+    Serial.print("connect Device Name ");
+    Serial.println(Btdssp.remote_name);
+
+    Serial.print("Stored Connected BD Address to EEPROM.");
+    Serial.print(ssp_bdaddr[0],HEX);
+    for(int i = 1 ; i < 6; i++) {
+      Serial.print(":");
+      Serial.print(ssp_bdaddr[i],HEX);
+    }
+    Serial.println("");
+    Serial.print("Stored Generated SSP LinkKey to EEPROM.");
+    Serial.print(ssp_link_key[0],HEX);
+    for(int i = 1 ; i < 16; i++) {
+      Serial.print(":");
+      Serial.print(ssp_link_key[i],HEX);
+    }
+    Serial.println("");
+
+    stored_ssp_status = true;
+  }
+#endif
+
+
   if (Xb1s.connected()) {
     if (Xb1s.stickData(STICK_LX) > (32767+7680) || Xb1s.stickData(STICK_LX) < (32767-7680) || Xb1s.stickData(STICK_LY) > (32767+7680) || Xb1s.stickData(STICK_LY) < (32767-7680)) {
-      Serial.print(F("\r\nStick_LX: "));
+      Serial.print(F("Stick_LX: "));
       Serial.print(Xb1s.stickData(STICK_LX));
       Serial.print(F("\tStick_LY: "));
-      Serial.print(Xb1s.stickData(STICK_LY));
+      Serial.println(Xb1s.stickData(STICK_LY));
     }
     if (Xb1s.stickData(STICK_RX) > (32767+7680) || Xb1s.stickData(STICK_RX) < (32767-7680) || Xb1s.stickData(STICK_RY) > (32767+7680) || Xb1s.stickData(STICK_RY) < (32767-7680)) {
-      Serial.print(F("\r\nStick_RX: "));
+      Serial.print(F("Stick_RX: "));
       Serial.print(Xb1s.stickData(STICK_RX));
       Serial.print(F("\tStick_RY: "));
-      Serial.print(Xb1s.stickData(STICK_RY));
+      Serial.println(Xb1s.stickData(STICK_RY));
     }
 
     if (Xb1s.triggerData(LT) > 0) {
-      Serial.print(F("\r\nTrigger_LT: "));
-      Serial.print(Xb1s.triggerData(LT));
+      Serial.print(F("Trigger_LT: "));
+      Serial.println(Xb1s.triggerData(LT));
     }
     if (Xb1s.triggerData(RT) > 0) {
-      Serial.print(F("\r\nTrigger_RT: "));
-      Serial.print(Xb1s.triggerData(RT));
+      Serial.print(F("Trigger_RT: "));
+      Serial.println(Xb1s.triggerData(RT));
     }
 
     int magLeft = map(Xb1s.triggerData(LT), 0, 1023, 0, 100);
@@ -98,130 +181,121 @@ void loop() {
       Xb1s.rumble(magLeft, magRight, magLeft, magRight);
     }
 /*
-      Serial.print(F("\r\nmagLeft: "));
+      Serial.print(F("magLeft: "));
       Serial.print(magLeft);
       Serial.print(F("\tmagRight: "));
-      Serial.print(magRight);
+      Serial.println(magRight);
 */
 
     if (Xb1s.dpadClick(DPAD_UP)) {
-      Serial.print(F("\r\nDPAD_UP"));
-      Xb1s.rumbleEnable(RUMBLE_TRIGGER_ONLY);
+      Serial.println(F("DPAD_UP"));
       Xb1s.rumblePulseEnable(RUMBLE_TRIGGER_ONLY);
-      Serial.print(F("\r\nRUMBLE_TRIGGER_ONLY"));
+      Serial.println(F("Pulse_RUMBLE_TRIGGER_ONLY"));
     }
     if (Xb1s.dpadClick(DPAD_UP_RIGHT)) {
-      Serial.print(F("\r\nDPAD_UP_RIGHT"));
-      Xb1s.rumbleEnable(RUMBLE_RIGHT_TRIGGER);
+      Serial.println(F("DPAD_UP_RIGHT"));
       Xb1s.rumblePulseEnable(RUMBLE_RIGHT_TRIGGER);
-      Serial.print(F("\r\nRUMBLE_RIGHT_TRIGGER"));
+      Serial.println(F("Pulse_RUMBLE_RIGHT_TRIGGER"));
     }
     if (Xb1s.dpadClick(DPAD_RIGHT)) {
-      Serial.print(F("\r\nDPAD_RIGHT"));
-      Xb1s.rumbleEnable(RUMBLE_RIGHT_ONLY);
+      Serial.println(F("DPAD_RIGHT"));
       Xb1s.rumblePulseEnable(RUMBLE_RIGHT_ONLY);
-      Serial.print(F("\r\nRUMBLE_RIGHT_ONLY"));
+      Serial.println(F("Pulse_RUMBLE_RIGHT_ONLY"));
     }
     if (Xb1s.dpadClick(DPAD_RIGHT_DOWN)) {
-      Serial.print(F("\r\nDPAD_RIGHT_DOWN"));
-      Xb1s.rumbleEnable(RUMBLE_RIGHT_WEAK);
+      Serial.println(F("DPAD_RIGHT_DOWN"));
       Xb1s.rumblePulseEnable(RUMBLE_RIGHT_WEAK);
-      Serial.print(F("\r\nRUMBLE_RIGHT_WEAK"));
+      Serial.println(F("Pulse_RUMBLE_RIGHT_WEAK"));
     }
     if (Xb1s.dpadClick(DPAD_DOWN)) {
-      Serial.print(F("\r\nDPAD_DOWN"));
-      Xb1s.rumbleEnable(RUMBLE_MAIN_ONLY);
+      Serial.println(F("DPAD_DOWN"));
       Xb1s.rumblePulseEnable(RUMBLE_MAIN_ONLY);
-      Serial.print(F("\r\nRUMBLE_MAIN_ONLY"));
+      Serial.println(F("Pulse_RUMBLE_MAIN_ONLY"));
     }
     if (Xb1s.dpadClick(DPAD_DOWN_LEFT)) {
-      Serial.print(F("\r\nDPAD_DOWN_LEFT"));
-      Xb1s.rumbleEnable(RUMBLE_LEFT_STRONG);
+      Serial.println(F("DPAD_DOWN_LEFT"));
       Xb1s.rumblePulseEnable(RUMBLE_LEFT_STRONG);
-      Serial.print(F("\r\nRUMBLE_LEFT_STRONG"));
+      Serial.println(F("Pulse_RUMBLE_LEFT_STRONG"));
     }
     if (Xb1s.dpadClick(DPAD_LEFT)) {
-      Serial.print(F("\r\nDPAD_LEFT"));
-      Xb1s.rumbleEnable(RUMBLE_LEFT_ONLY);
+      Serial.println(F("DPAD_LEFT"));
       Xb1s.rumblePulseEnable(RUMBLE_LEFT_ONLY);
-      Serial.print(F("\r\nRUMBLE_LEFT_ONLY"));
+      Serial.println(F("Pulse_RUMBLE_LEFT_ONLY"));
     }
     if (Xb1s.dpadClick(DPAD_LEFT_UP)) {
-      Serial.print(F("\r\nDPAD_LEFT_UP"));
-      Xb1s.rumbleEnable(RUMBLE_LEFT_TRIGGER);
+      Serial.println(F("DPAD_LEFT_UP"));
       Xb1s.rumblePulseEnable(RUMBLE_LEFT_TRIGGER);
-      Serial.print(F("\r\nRUMBLE_LEFT_TRIGGER"));
+      Serial.println(F("Pulse_RUMBLE_LEFT_TRIGGER"));
     }     
 
 
     if (Xb1s.buttonClick(A)) {
-      Serial.print(F("\r\nA"));
-      Serial.print(F("\r\nSetRumblePulseDemoPattern A"));
+      Serial.println(F("A"));
+      Serial.println(F("SetRumblePulseDemoPattern A"));
       Xb1s.rumblePulseMagSet(50, 100, 50, 100);
       Xb1s.rumblePulseLoopSet(10, 5, 5);
     }
     if (Xb1s.buttonClick(B)) {
-      Serial.print(F("\r\nB"));
-      Serial.print(F("\r\nSetRumblePulseDemoPattern B"));
+      Serial.println(F("B"));
+      Serial.println(F("SetRumblePulseDemoPattern B"));
       Xb1s.rumblePulseMagSet(100, 100, 100, 100);
       Xb1s.rumblePulseLoopSet(50, 50, 2);
     }
     if (Xb1s.buttonClick(X)) {
-      Serial.print(F("\r\nX"));
-      Xb1s.rumbleEnable(RUMBLE_ALL);
+      Serial.println(F("X"));
       Xb1s.rumblePulseEnable(RUMBLE_ALL);
-      Serial.print(F("\r\nRUMBLE_ALL"));
+      Serial.println(F("Pulse_RUMBLE_ALL"));
     }
     if (Xb1s.buttonClick(Y)) {
-      Serial.print(F("\r\nY"));
+      Serial.println(F("Y"));
       Xb1s.rumbleStopAll();
-      Serial.print(F("\r\nrumbleStopAll"));
+      Serial.println(F("rumbleStopAll"));
       delay(100);
       Xb1s.rumbleInit();
-      Serial.print(F("\r\nrumbleInit"));
+      Serial.println(F("rumbleInit"));
     }
 
 //    if (Xb1s.buttonClick(LB))
     if (Xb1s.buttonData(LB)){
-      Serial.print(F("\r\nLB"));
+      Serial.println(F("LB"));
     }
     int magAll = (Xb1s.buttonData(LB) * 100);
     if((magLeft == 0) && (magRight == 0)){ // If the rumble data transmit is not restrained,it will be crashed.
       Xb1s.rumble(magAll, magAll, magAll, magAll);
     }
     if (Xb1s.buttonClick(RB)) {
-      Serial.print(F("\r\nRB"));
+      Serial.println(F("RB"));
       Xb1s.rumblePulseStart();
-      Serial.print(F("\r\nrumblePulseStart"));
+      Serial.println(F("rumblePulseStart"));
     }
     if (Xb1s.buttonClick(RS))
-      Serial.print(F("\r\nRS"));
+      Serial.println(F("RS"));
     if (Xb1s.buttonClick(LS))
-      Serial.print(F("\r\nLS"));
+      Serial.println(F("LS"));
 
 
     if (Xb1s.buttonClick(VIEW)) {
-      Serial.print(F("\r\nVIEW"));
-      Serial.print(F("\r\nBatteryStatus:"));
-      Serial.print(Xb1s.batteryStatus(), BIN);
-      Serial.print(F("\r\nBatteryLevel:"));
-      if(Xb1s.batteryLevel() == 3) Serial.print(F("Full"));
-      else if(Xb1s.batteryLevel() == 2) Serial.print(F("High"));
-      else if(Xb1s.batteryLevel() == 1) Serial.print(F("Normal"));
+      Serial.println(F("VIEW"));
+      Serial.print(F("BatteryStatus:"));
+      Serial.println(Xb1s.batteryStatus(), BIN);
+      Serial.print(F("BatteryLevel:"));
+      if(Xb1s.batteryLevel() == 3) Serial.println(F("Full"));
+      else if(Xb1s.batteryLevel() == 2) Serial.println(F("High"));
+      else if(Xb1s.batteryLevel() == 1) Serial.println(F("Normal"));
       else {
         Serial.print(F("Low:"));
-        Serial.print(Xb1s.batteryLevel(), BIN);
+        Serial.println(Xb1s.batteryLevel(), BIN);
       }
     }
     if (Xb1s.buttonClick(MENU)) {
-      Serial.print(F("\r\nMENU"));
+      Serial.println(F("MENU"));
       Xb1s.rumbleTest(0b0110,50,50,50,50,100,200,2);
-      Serial.print(F("\r\nrumbleTest"));
-      Serial.print(F("\r\n0b0110,50,50,50,50,100,200,2"));
-      Serial.print(F("\r\nRumbleMotorEnable:0b0110, Mag:50, VibrationTime:100x10ms, StartWaiting:200x10ms, LoopCount:2(Vibrate 3 times)"));
+      Serial.println(F("rumbleTest"));
+      Serial.println(F("0b0110,50,50,50,50,100,200,2"));
+      Serial.println(F("RumbleMotorEnable:0b0110, Mag:50, VibrationTime:100x10ms, StartWaiting:200x10ms, LoopCount:2(Vibrate 3 times)"));
     }
     if (Xb1s.buttonClick(XBOX)) {
-      Serial.print(F("\r\nXBOX"));
+      Serial.println(F("XBOX"));
     }
   }
 }
