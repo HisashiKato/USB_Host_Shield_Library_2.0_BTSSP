@@ -1,4 +1,4 @@
-# USB_Host_Shield_Library_2.0_BTXBOX
+# USB_Host_Shield_Library_2.0_BTSSP
 The code is released under the GNU General Public License.
 
 ## Summary
@@ -19,16 +19,20 @@ USB_Host_Shield_2.0 リポジトリ
 <http://kato-h.cocolog-nifty.com/khweblog/2020/09/post-c93f3c.html>  
 
 ここでは、その自分で改造したライブラリを残しておいて、なおかつ自分の勉強と練習のために、さらに好き勝手に手を加えています。
-今回(2021/02/26)、元のライブラリや前の自作ライブラリを書き変えまくって、かなり大きな変更を加えたので、互換性等はあまりないです。
+元のライブラリや前の自作ライブラリを書き変えまくって、かなり大きな変更を加えているので、互換性等はあまりないです。
 
 動作保証はしません。ユーザーサポートもしません。使用は自己責任で。何か問題があっても自分で何とかしてください。
 
-商用のプログラムのコード等は書いたことが無い素人で初心者なので、多分、色々と間違ってると思います。
+商用のプログラムのコード等は書いたことが無い素人で初心者なので、多分、色々と間違っていると思います。
+このライブラリのソースコードを、プロの人やC++の熟練者人が見ると「なんでこんな書き方するの！」と怒りさえ覚える人がいるかもしれません。
+もし居ましたら、このライブラリをフォークして、修正や清書をして頂ければと思います。
 
 オープンソースなので、ライセンスの範囲内で自由に使ってやってください。
 
-USB_Host_Shield_Library_2.0_BTXBOX リポジトリ  
-<https://github.com/HisashiKato/USB_Host_Shield_Library_2.0_BTXBOX>  
+ライブラリの名前を「USB Host Shield Library 2.0 BTXBOX」から「USB Host Shield Library 2.0 BTSSP」に変更しました。
+
+USB_Host_Shield_Library_2.0_BTSSP リポジトリ  
+<https://github.com/HisashiKato/USB_Host_Shield_Library_2.0_BTSSP>  
 
 　  
 
@@ -42,16 +46,16 @@ USB_Host_Shield_Library_2.0_BTXBOX リポジトリ
 
 ## 使用方法
 ### Arduino IDE にライブラリを組み込む  
-USB Host Library Rev.2.0 BTXBOXは、Arduino IDEで使用できます。
+USB Host Library Rev.2.0 BTSSPは、Arduino IDEで使用できます。
     
 1. Code の Download ZIP 、または下記URLから、ライブラリのZIPをダウンロードします。  
-<https://github.com/HisashiKato/USB_Host_Shield_Library_2.0_BTXBOX/archive/master.zip>  
+<https://github.com/HisashiKato/USB_Host_Shield_Library_2.0_BTSSP/archive/master.zip>  
    
-2. Arduino IDE を起動して、スケッチ > ライブラリをインクルード > .ZIP形式のライブラリをインストール で、ダウンロードした USB_Host_Shield_Library_2.0_BTXBOX-master.zip を指定します。  
+2. Arduino IDE を起動して、スケッチ > ライブラリをインクルード > .ZIP形式のライブラリをインストール で、ダウンロードした USB_Host_Shield_Library_2.0_BTSSP-master.zip を指定します。  
    
 3. Arduino IDE に、「ライブラリが追加されました。「ライブラリをインクルード」メニューを確認してください。」と表示されれば成功。
 
-4. Arduino IDE で、メニューの スケッチ > ライブラリをインクルード のライブラリの一覧に、USB Host Shield Library 2.0 BTXBOX が表示されているのを確認してください。
+4. Arduino IDE で、メニューの スケッチ > ライブラリをインクルード のライブラリの一覧に、USB Host Shield Library 2.0 BTSSP が表示されているのを確認してください。
 
    
    
@@ -59,17 +63,13 @@ USB Host Library Rev.2.0 BTXBOXは、Arduino IDEで使用できます。
 ### ライブラリの使用方法
 先ずは、元の USB Host Library Rev.2.0 のライブラリの使用方法を読んでください。
 
-基本的な使い方は、本家の USB Host Library Rev.2.0 の BTHID 等とほぼ同じです。但し、BTD の代わりに、このライブラリの BTDSSP を使います。 そして、ペアリングに PINコードを使用しません。
-
-ペアリングモードが XB1SBTR Xb1s(&Btdssp, PAIR);
-
-ペアリングが済んだ後は XB1SBTR Xb1s(&Btdssp);
-
-となっています。スケッチ例を参照してください。
+仕様が大幅に変わりました。具体的な使い方は、スケッチ例を参照してください。
 
 このライブラリでは、Arduino の内部のフラッシュ領域にデータを書き込み読み出すEEPROMライブラリを使用しています。注意してください。具体的にはペアリングに成功したデバイスのBDアドレス(Bluetooth Device Address) 6byte、それに続けてペアリング時に生成されたリンクキー 16byte を、アドレスの0番地から書き込んで、再接続時に読みに行っています。（このフラッシュ領域のデータは、スケッチを書き変えても変更されません）
 
 SSP のリンクキーを保存するので、再接続等が確実になっています。
+
+ライブラリを書き代えて、EEPROMライブラリを外に出したので、EEPROMライブラリが使えないArduino互換ボードでも、工夫をすれば使えるようになったかも？
 
 このライブラリは、BluetoothのSSP接続にだけ対応しています。バイナリの容量を極力減らすために、従来のPS3コントローラー,PS4コントローラー,Wiiリモコン等との接続や、旧来のPINコードを用いた接続は外しました。USB有線での接続にも対応していません。それらは元の USB Host Library Rev.2.0 ライブラリを使用してください。
 
@@ -87,7 +87,12 @@ SSP のリンクキーを保存するので、再接続等が確実になって�
 
 ### Nintendo Switch Pro コントローラー
 
-サブコマンドの送信を組み込んだので、振動を暫定的に入れてみました。ジャイロは対応するか未定です（2021/04/04）
+簡易版です。サブコマンドの送信を組み込んだので、振動を暫定的に入れてみました。ジャイロは対応するか未定です（2021/04/04）
+
+### Bluetooth キーボード,マウス
+
+オリジナルのライブラリの、4ケタのPINコードを使う古いペアリングのモードに対応していないBluetoothキーボードやマウスが増えているようです。
+それらはこのライブラリで使用できる可能性があります。
 
 ## 参考にさせて頂いたプロジェクトやWEBサイト
 <https://github.com/felis/USB_Host_Shield_2.0>：USB_Host_Shield_2.0 の本家
