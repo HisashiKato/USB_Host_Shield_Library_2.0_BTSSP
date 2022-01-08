@@ -164,6 +164,9 @@ uint8_t USB::ctrlReq(uint8_t addr, uint8_t ep, uint8_t bmReqType, uint8_t bReque
 
                         while(left) {
                                 // Bytes read into buffer
+#if defined(ESP8266) || defined(ESP32)
+                        yield(); // needed in order to reset the watchdog timer on the ESP8266
+#endif
                                 uint16_t read = nbytes;
                                 //uint16_t read = (left<nbytes) ? left : nbytes;
 
@@ -231,6 +234,9 @@ uint8_t USB::InTransfer(EpInfo *pep, uint16_t nak_limit, uint16_t *nbytesptr, ui
 
         // use a 'break' to exit this loop
         while(1) {
+#if defined(ESP8266) || defined(ESP32)
+                        yield(); // needed in order to reset the watchdog timer on the ESP8266
+#endif
                 rcode = dispatchPkt(tokIN, pep->epAddr, nak_limit); //IN packet to EP-'endpoint'. Function takes care of NAKS.
                 if(rcode == hrTOGERR) {
                         // yes, we flip it wrong here so that next time it is actually correct!
@@ -242,8 +248,12 @@ uint8_t USB::InTransfer(EpInfo *pep, uint16_t nak_limit, uint16_t *nbytesptr, ui
                         //printf(">>>>>>>> Problem! dispatchPkt %2.2x\r\n", rcode);
                         break; //should be 0, indicating ACK. Else return error code.
                 }
-                /* check for RCVDAVIRQ and generate error if not present */
-                /* the only case when absence of RCVDAVIRQ makes sense is when toggle error occurred. Need to add handling for that */
+                /* check for RCVDAVIRQ and generate error if not present
+                 * the only case when absence of RCVDAVIRQ makes sense is when toggle error occurred.
+                 * Need to add handling for that
+                 *
+                 * NOTE: I've seen this happen with SPI corruption -- xxxajk
+                 */
                 if((regRd(rHIRQ) & bmRCVDAVIRQ) == 0) {
                         //printf(">>>>>>>> Problem! NO RCVDAVIRQ!\r\n");
                         rcode = 0xf0; //receive error
@@ -318,17 +328,27 @@ uint8_t USB::OutTransfer(EpInfo *pep, uint16_t nak_limit, uint16_t nbytes, uint8
         regWr(rHCTL, (pep->bmSndToggle) ? bmSNDTOG1 : bmSNDTOG0); //set toggle value
 
         while(bytes_left) {
+#if defined(ESP8266) || defined(ESP32)
+                        yield(); // needed in order to reset the watchdog timer on the ESP8266
+#endif
                 retry_count = 0;
                 nak_count = 0;
                 bytes_tosend = (bytes_left >= maxpktsize) ? maxpktsize : bytes_left;
                 bytesWr(rSNDFIFO, bytes_tosend, data_p); //filling output FIFO
                 regWr(rSNDBC, bytes_tosend); //set number of bytes
                 regWr(rHXFR, (tokOUT | pep->epAddr)); //dispatch packet
-                while(!(regRd(rHIRQ) & bmHXFRDNIRQ)); //wait for the completion IRQ
+                while(!(regRd(rHIRQ) & bmHXFRDNIRQ)){
+#if defined(ESP8266) || defined(ESP32)
+                        yield(); // needed in order to reset the watchdog timer on the ESP8266
+#endif
+                } //wait for the completion IRQ
                 regWr(rHIRQ, bmHXFRDNIRQ); //clear IRQ
                 rcode = (regRd(rHRSL) & 0x0f);
 
                 while(rcode && ((int32_t)((uint32_t)millis() - timeout) < 0L)) {
+#if defined(ESP8266) || defined(ESP32)
+                        yield(); // needed in order to reset the watchdog timer on the ESP8266
+#endif
                         switch(rcode) {
                                 case hrNAK:
                                         nak_count++;
@@ -356,7 +376,11 @@ uint8_t USB::OutTransfer(EpInfo *pep, uint16_t nak_limit, uint16_t nbytes, uint8
                         regWr(rSNDFIFO, *data_p);
                         regWr(rSNDBC, bytes_tosend);
                         regWr(rHXFR, (tokOUT | pep->epAddr)); //dispatch packet
-                        while(!(regRd(rHIRQ) & bmHXFRDNIRQ)); //wait for the completion IRQ
+                        while(!(regRd(rHIRQ) & bmHXFRDNIRQ)){
+#if defined(ESP8266) || defined(ESP32)
+                        yield(); // needed in order to reset the watchdog timer on the ESP8266
+#endif
+                        } //wait for the completion IRQ
                         regWr(rHIRQ, bmHXFRDNIRQ); //clear IRQ
                         rcode = (regRd(rHRSL) & 0x0f);
                 }//while( rcode && ....
@@ -364,6 +388,11 @@ uint8_t USB::OutTransfer(EpInfo *pep, uint16_t nak_limit, uint16_t nbytes, uint8
                 data_p += bytes_tosend;
         }//while( bytes_left...
 breakout:
+        /* If rcode(=rHRSL) is non-zero, untransmitted data remains in the SNDFIFO. */
+        if(rcode != 0) {
+            //Switch the FIFO containing the OUT data back under microcontroller control and reset pointer.
+            regWr(rSNDBC, 0);
+        }
 
         pep->bmSndToggle = (regRd(rHRSL) & bmSNDTOGRD) ? 1 : 0; //bmSNDTOG1 : bmSNDTOG0;  //update toggle
         return ( rcode); //should be 0 in all cases

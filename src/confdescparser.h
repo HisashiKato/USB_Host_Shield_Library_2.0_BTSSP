@@ -1,11 +1,18 @@
 /* Copyright (C) 2011 Circuits At Home, LTD. All rights reserved.
 
-This software may be distributed and modified under the terms of the GNU
-General Public License version 2 (GPL2) as published by the Free Software
-Foundation and appearing in the file GPL2.TXT included in the packaging of
-this file. Please note that GPL2 Section 2[b] requires that all works based
-on this software must also be made publicly available under the terms of
-the GPL2 ("Copyleft").
+This program is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 2 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 Contact information
 -------------------
@@ -101,12 +108,14 @@ bool ConfigDescParser<CLASS_ID, SUBCLASS_ID, PROTOCOL_ID, MASK>::ParseDescriptor
                         theBuffer.valueSize = 2;
                         valParser.Initialize(&theBuffer);
                         stateParseDescr = 1;
+                        // fall through
                 case 1:
                         if(!valParser.Parse(pp, pcntdn))
                                 return false;
                         dscrLen = *((uint8_t*)theBuffer.pValue);
                         dscrType = *((uint8_t*)theBuffer.pValue + 1);
                         stateParseDescr = 2;
+                        // fall through
                 case 2:
                         // This is a sort of hack. Assuming that two bytes are all ready in the buffer
                         //      the pointer is positioned two bytes ahead in order for the rest of descriptor
@@ -115,6 +124,7 @@ bool ConfigDescParser<CLASS_ID, SUBCLASS_ID, PROTOCOL_ID, MASK>::ParseDescriptor
                         //      in the buffer.
                         theBuffer.pValue = varBuffer + 2;
                         stateParseDescr = 3;
+                        // fall through
                 case 3:
                         switch(dscrType) {
                                 case USB_DESCRIPTOR_INTERFACE:
@@ -128,6 +138,7 @@ bool ConfigDescParser<CLASS_ID, SUBCLASS_ID, PROTOCOL_ID, MASK>::ParseDescriptor
                         theBuffer.valueSize = dscrLen - 2;
                         valParser.Initialize(&theBuffer);
                         stateParseDescr = 4;
+                        // fall through
                 case 4:
                         switch(dscrType) {
                                 case USB_DESCRIPTOR_CONFIGURATION:

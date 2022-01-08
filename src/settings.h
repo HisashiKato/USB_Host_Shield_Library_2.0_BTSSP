@@ -1,11 +1,18 @@
 /* Copyright (C) 2011 Circuits At Home, LTD. All rights reserved.
 
-This software may be distributed and modified under the terms of the GNU
-General Public License version 2 (GPL2) as published by the Free Software
-Foundation and appearing in the file GPL2.TXT included in the packaging of
-this file. Please note that GPL2 Section 2[b] requires that all works based
-on this software must also be made publicly available under the terms of
-the GPL2 ("Copyleft").
+This program is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 2 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 Contact information
 -------------------
@@ -32,7 +39,7 @@ e-mail   :  support@circuitsathome.com
 ////////////////////////////////////////////////////////////////////////////////
 
 /* Set this to 1 to activate serial debugging */
-//#define ENABLE_UHS_DEBUGGING 1
+#define ENABLE_UHS_DEBUGGING 0
 
 /* This can be used to select which serial port to use for debugging if
  * multiple serial ports are available.
@@ -60,7 +67,7 @@ e-mail   :  support@circuitsathome.com
 ////////////////////////////////////////////////////////////////////////////////
 
 /* Set this to 1 to activate code for the Wii IR camera */
-//#define ENABLE_WII_IR_CAMERA 0
+#define ENABLE_WII_IR_CAMERA 0
 
 ////////////////////////////////////////////////////////////////////////////////
 // MASS STORAGE
@@ -73,16 +80,14 @@ e-mail   :  support@circuitsathome.com
 #endif
 
 ////////////////////////////////////////////////////////////////////////////////
-// Set to 1 to use the faster spi4teensy3 driver.
+// Set to 1 to use the faster spi4teensy3 driver on Teensy 3.x
 ////////////////////////////////////////////////////////////////////////////////
 #ifndef USE_SPI4TEENSY3
+#if defined(CORE_TEENSY) && (defined(__MK20DX128__) || defined(__MK20DX256__) || defined(__MK64FX512__) || defined(__MK66FX1M0__))
 #define USE_SPI4TEENSY3 1
-#endif
-
-// Disabled on the Teensy LC, as it is incompatible for now
-#if defined(__MKL26Z64__)
-#undef USE_SPI4TEENSY3
+#else
 #define USE_SPI4TEENSY3 0
+#endif
 #endif
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -151,6 +156,11 @@ e-mail   :  support@circuitsathome.com
 #include <SPI_Master.h>
 #define SPI SPI_Master
 #define MFK_CASTUINT8T (uint8_t) // RBLs return type for sizeof needs casting to uint8_t
+#endif
+#ifdef NRF52_SERIES
+#include <SPI.h> 
+#include <nrf_gpio.h>
+#define MFK_CASTUINT8T (uint8_t) // NRF return type for sizeof needs casting to uint8_t
 #endif
 #if defined(__PIC32MX__) || defined(__PIC32MZ__)
 #include <../../../../hardware/pic32/libraries/SPI/SPI.h> // Hack to use the SPI library
