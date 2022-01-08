@@ -68,6 +68,32 @@ public:
         };
 
 
+        /** for Secure Simple Pairing Tools **/
+
+        bool linkkeyNotification();
+
+
+        bool setConnectAddress(char *addr);
+
+        bool setConnectAddress(uint8_t *addr);
+
+
+        bool setPairedLinkkey(char *key);
+
+        bool setPairedLinkkey(uint8_t *key);
+
+
+
+        void getConnectedAddressHex(uint8_t bdaddr[6]);
+
+        void getConnectedAddressStr(char bdaddrstr[18]);
+
+
+        void getPairedLinkkeyHex(uint8_t linkkey[16]);
+
+        void getPairedLinkkeyStr(char linkkeystr[48]);
+
+
 protected:
         /** @name BluetoothService implementation */
         /**

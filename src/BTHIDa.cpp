@@ -401,3 +401,93 @@ void BTHIDa::setLeds(uint8_t data) {
         buf[2] = data;
         pBtdssp->L2CAP_Command(hci_handle, buf, 3, interrupt_scid[0], interrupt_scid[1]);
 }
+
+/************************************************************/
+/*                      SSP Tools                           */
+/************************************************************/
+bool BTHIDa::linkkeyNotification() {
+        return pBtdssp->linkkeyNotification;
+}
+
+bool BTHIDa::setConnectAddress(char *addr) {
+        uint8_t bdaddr[6];
+        if (sscanf(addr,"%hhx:%hhx:%hhx:%hhx:%hhx:%hhx", 
+                   &bdaddr[5], &bdaddr[4], &bdaddr[3], &bdaddr[2], &bdaddr[1], &bdaddr[0]
+                   ) != 6) {
+                return false;// Could not convert address
+        }
+        for (int i = 0; i < 6; i++) { 
+                pBtdssp->connect_bdaddr[i] = bdaddr[i]; 
+        }
+        return true;
+}
+
+bool BTHIDa::setConnectAddress(uint8_t *addr) {
+        uint8_t bdaddr[6];
+        for (int i = 0; i < 6; i++) {
+                bdaddr[i] = addr[5 - i];
+        }
+        for (int i = 0; i < 6; i++) { 
+                pBtdssp->connect_bdaddr[i] = bdaddr[i]; 
+        }
+        return true;
+}
+
+
+bool BTHIDa::setPairedLinkkey(char *key) {
+        uint8_t linkkey[16];
+        if (sscanf(key,"%hhx:%hhx:%hhx:%hhx:%hhx:%hhx:%hhx:%hhx:%hhx:%hhx:%hhx:%hhx:%hhx:%hhx:%hhx:%hhx", 
+                   &linkkey[15], &linkkey[14], &linkkey[13], &linkkey[12], &linkkey[11], &linkkey[10], &linkkey[9], &linkkey[8],
+                   &linkkey[7], &linkkey[6], &linkkey[5], &linkkey[4], &linkkey[3], &linkkey[2], &linkkey[1], &linkkey[0]
+                   ) != 16) {
+                return false;// Could not convert address
+        }
+        for (int i = 0; i < 16; i++) { 
+                pBtdssp->paired_link_key[i] = linkkey[i]; 
+        }
+        return true;
+}
+
+bool BTHIDa::setPairedLinkkey(uint8_t *key) {
+        uint8_t linkkey[16];
+        for (int i = 0; i < 16; i++) {
+                linkkey[i] = key[15 - i];
+        }
+        for (int i = 0; i < 16; i++) { 
+                pBtdssp->paired_link_key[i] = linkkey[i]; 
+        }
+        return true;
+}
+
+
+void BTHIDa::getConnectedAddressHex(uint8_t bdaddr[6]) {
+        for (int i = 0; i < 6; i++) {
+                bdaddr[i] = pBtdssp->disc_bdaddr[5 - i];
+        }
+}
+
+void BTHIDa::getConnectedAddressStr(char bdaddrstr[18]) {
+        uint8_t bdaddr[6];
+        for (int i = 0; i < 6; i++) {
+                bdaddr[i] = pBtdssp->disc_bdaddr[5 - i];
+        }
+        sprintf(bdaddrstr, "%02X:%02X:%02X:%02X:%02X:%02X", bdaddr[0], bdaddr[1], bdaddr[2], bdaddr[3], bdaddr[4], bdaddr[5]);
+}
+
+
+void BTHIDa::getPairedLinkkeyHex(uint8_t linkkey[16]) {
+        for (int i = 0; i < 16; i++) {
+                linkkey[i] = pBtdssp->link_key[15 - i];
+        }
+}
+
+void BTHIDa::getPairedLinkkeyStr(char linkkeystr[48]) {
+        uint8_t linkkey[16];
+        for (int i = 0; i < 16; i++) {
+                linkkey[i] = pBtdssp->link_key[15 - i];
+        }
+        sprintf(linkkeystr, "%02X:%02X:%02X:%02X:%02X:%02X:%02X:%02X:%02X:%02X:%02X:%02X:%02X:%02X:%02X:%02X",
+                     linkkey[0], linkkey[1], linkkey[2], linkkey[3], linkkey[4], linkkey[5], linkkey[6], linkkey[7],
+                     linkkey[8], linkkey[9], linkkey[10], linkkey[11], linkkey[12], linkkey[13], linkkey[14], linkkey[15]);
+}
+
