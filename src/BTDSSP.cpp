@@ -31,6 +31,7 @@ BTDSSP::BTDSSP(USB *p) :
 connectToHIDDevice(false),
 pairWithHIDDevice(false),
 pairedDevice(false),      ////
+linkkeyNotification(false),
 pUsb(p), // Pointer to USB class instance - mandatory
 bAddress(0), // Device address - mandatory
 bNumEP(1), // If config descriptor needs to be parsed
@@ -305,7 +306,7 @@ void BTDSSP::EndpointXtract(uint8_t conf, uint8_t iface __attribute__((unused)),
 }
 
 void BTDSSP::PrintEndpointDescriptor(const USB_ENDPOINT_DESCRIPTOR* ep_ptr __attribute__((unused))) {
-/*
+
 #ifdef EXTRADEBUG
         Notify(PSTR("\r\nEndpoint descriptor:"), 0x80);
         Notify(PSTR("\r\nLength:\t\t"), 0x80);
@@ -321,7 +322,7 @@ void BTDSSP::PrintEndpointDescriptor(const USB_ENDPOINT_DESCRIPTOR* ep_ptr __att
         Notify(PSTR("\r\nPoll Intrv:\t"), 0x80);
         D_PrintHex<uint8_t > (ep_ptr->bInterval, 0x80);
 #endif
-*/
+
 }
 
 /* Performs a cleanup after failed Init() attempt */
@@ -366,78 +367,138 @@ void BTDSSP::HCI_event_task() {
 #ifdef DEBUG_USB_HOST
                                         Notify(PSTR("\r\nHCI Command Failed: "), 0x80);
                                         D_PrintHex<uint8_t > (hcibuf[2], 0x80);
-/*
+
                                         Notify(PSTR("\r\nNum HCI Command Packets: "), 0x80);
                                         D_PrintHex<uint8_t > (hcibuf[3], 0x80);
                                         Notify(PSTR("\r\nCommand Opcode: "), 0x80);
                                         D_PrintHex<uint8_t > (hcibuf[4], 0x80);
                                         Notify(PSTR(" "), 0x80);
                                         D_PrintHex<uint8_t > (hcibuf[5], 0x80);
-*/
+
 #endif
                                 }
                                 break;
 
-                        case EV_INQUIRY_COMPLETE:
+                        case EV_INQUIRY_COMPLETE: //HCI_Inquiry command has been completed.
                                 if(inquiry_counter >= 5 && pairWithHIDDevice) {
                                         inquiry_counter = 0;
 #ifdef DEBUG_USB_HOST
                                         Notify(PSTR("\r\nCouldn't find HID device"), 0x80);
 #endif
                                         connectToHIDDevice = false;
-                                        pairWithHIDDevice = false;
-                                        hci_state = HCI_SCANNING_STATE;
+                                        pairWithHIDDevice = true;
+//                                        pairWithHIDDevice = false;
+                                        hci_state = HCI_CHECK_DEVICE_SERVICE;
+//                                        hci_state = HCI_SCANNING_STATE;
 #ifdef DEBUG_USB_HOST
-                                        Notify(PSTR("\r\nhci_state = HCI_SCANNING_STATE_INQUIRY_COMPLETE"), 0x80);
+                                        Notify(PSTR("\r\nEV_INQUIRY_COMPLETE >>> hci_state = HCI_CHECK_DEVICE_SERVICE"), 0x80);
+//                                        Notify(PSTR("\r\nEV_INQUIRY_COMPLETE >>> hci_state = HCI_SCANNING_STATE"), 0x80);
 #endif
                                 }
                                 inquiry_counter++;
+#ifdef EXTRADEBUG
+/*
+                                Notify(PSTR("\r\nEV_INQUIRY_COMPLETE: "), 0x80);
+                                Notify(PSTR("\r\ninquiry_counter "), 0x80);
+                                Notify(inquiry_counter, 0x80);
+*/
+#endif
                                 break;
 
                         case EV_INQUIRY_RESULT:
                                 if(hcibuf[2]) { // Check that there is more than zero responses
 #ifdef EXTRADEBUG
+/*
                                         Notify(PSTR("\r\nNumber of responses: "), 0x80);
                                         Notify(hcibuf[2], 0x80);
+*/
 #endif
                                         for(uint8_t i = 0; i < hcibuf[2]; i++) {
-                                                uint8_t offset = 8 * hcibuf[2] + 3 * i;
+// ADD-------------
+                                                if (connectAddressIsSet){
 
-                                                for(uint8_t j = 0; j < 3; j++)
-                                                        classOfDevice[j] = hcibuf[j + 4 + offset];
-
-#ifdef EXTRADEBUG
-                                                Notify(PSTR("\r\nClass of device: "), 0x80);
-                                                D_PrintHex<uint8_t > (classOfDevice[2], 0x80);
-                                                Notify(PSTR(" "), 0x80);
-                                                D_PrintHex<uint8_t > (classOfDevice[1], 0x80);
-                                                Notify(PSTR(" "), 0x80);
-                                                D_PrintHex<uint8_t > (classOfDevice[0], 0x80);
-#endif
-
-                                                if(pairWithHIDDevice && (classOfDevice[1] & 0x05) && (classOfDevice[0] & 0xCC)) { // Check if it is a mouse, keyboard, gamepad or joystick - see: http://bluetooth-pentest.narod.ru/software/bluetooth_class_of_device-service_generator.html
-#ifdef DEBUG_USB_HOST
-                                                        if(classOfDevice[0] & 0x80)
-                                                                Notify(PSTR("\r\nMouse found"), 0x80);
-                                                        if(classOfDevice[0] & 0x40)
-                                                                Notify(PSTR("\r\nKeyboard found"), 0x80);
-                                                        if(classOfDevice[0] & 0x08)
-                                                                Notify(PSTR("\r\nGamepad found"), 0x80);
-                                                        if(classOfDevice[0] & 0x04)
-                                                                Notify(PSTR("\r\nJoystick found"), 0x80);
-#endif
-                                                        for(uint8_t k = 0; k < 6; k++)
-                                                                disc_bdaddr[k] = hcibuf[k + 3 + 6 * i];
-#ifdef DEBUG_USB_HOST
-                                                        Notify(PSTR("\r\nBD_ADDR: "), 0x80);
-                                                        for(int8_t n = 5; n > 0; n--) {
-                                                                D_PrintHex<uint8_t > (disc_bdaddr[n], 0x80);
-                                                                Notify(PSTR(":"), 0x80);
+                                                        for(uint8_t k = 0; k < 6; k++) {
+                                                                responded_bdaddr[k] = hcibuf[k + 3 + 6 * i];
                                                         }
-                                                        D_PrintHex<uint8_t > (disc_bdaddr[0], 0x80);
+#ifdef EXTRADEBUG
+                                                        Notify(PSTR("\r\nCheck the Device BD address."), 0x80);
+                                                                Notify(PSTR("\r\nconnect_bdaddr: "), 0x80);
+                                                                for(int8_t n = 5; n > 0; n--) {
+                                                                        D_PrintHex<uint8_t > (connect_bdaddr[n], 0x80);
+                                                                        Notify(PSTR(":"), 0x80);
+                                                                }
+                                                                D_PrintHex<uint8_t > (connect_bdaddr[0], 0x80);
+                                                                Notify(PSTR("\r\nresponded_bdaddr: "), 0x80);
+                                                                for(int8_t n = 5; n > 0; n--) {
+                                                                        D_PrintHex<uint8_t > (responded_bdaddr[n], 0x80);
+                                                                        Notify(PSTR(":"), 0x80);
+                                                                }
+                                                                D_PrintHex<uint8_t > (responded_bdaddr[0], 0x80);
 #endif
-                                                        hci_set_flag(HCI_FLAG_DEVICE_FOUND);
-                                                        break;
+                                                        if (memcmp(responded_bdaddr, connect_bdaddr, sizeof(responded_bdaddr)) == 0) {
+                                                                for(uint8_t r = 0; r < 6; r++) {
+                                                                        disc_bdaddr[r] = responded_bdaddr[r];
+                                                                }
+#ifdef DEBUG_USB_HOST
+                                                                Notify(PSTR("\r\nBD_ADDR: "), 0x80);
+                                                                for(int8_t n = 5; n > 0; n--) {
+                                                                        D_PrintHex<uint8_t > (disc_bdaddr[n], 0x80);
+                                                                        Notify(PSTR(":"), 0x80);
+                                                                }
+                                                                D_PrintHex<uint8_t > (disc_bdaddr[0], 0x80);
+#endif
+                                                                hci_set_flag(HCI_FLAG_HID_DEVICE_FOUND);
+                                                                break;
+#ifdef EXTRADEBUG
+                                                        } else {
+                                                                Notify(PSTR("\r\nDevice BD address not match."), 0x80);
+#endif
+                                                            
+                                                        }
+                                                         
+
+
+                                                } else {
+
+                                                        uint8_t offset = 8 * hcibuf[2] + 3 * i;
+
+                                                        for(uint8_t j = 0; j < 3; j++) {
+                                                                classOfDevice[j] = hcibuf[j + 4 + offset];
+                                                        }
+#ifdef EXTRADEBUG
+                                                        Notify(PSTR("\r\nClass of device: "), 0x80);
+                                                        D_PrintHex<uint8_t > (classOfDevice[2], 0x80);
+                                                        Notify(PSTR(" "), 0x80);
+                                                        D_PrintHex<uint8_t > (classOfDevice[1], 0x80);
+                                                        Notify(PSTR(" "), 0x80);
+                                                        D_PrintHex<uint8_t > (classOfDevice[0], 0x80);
+#endif
+
+                                                        if(pairWithHIDDevice && ((classOfDevice[1] & 0x0F) == 0x05) && (classOfDevice[0] & 0xCC)) { // Check if it is a mouse, keyboard, gamepad or joystick - see: http://bluetooth-pentest.narod.ru/software/bluetooth_class_of_device-service_generator.html
+#ifdef DEBUG_USB_HOST
+                                                                if(classOfDevice[0] & 0x80)
+                                                                        Notify(PSTR("\r\nMouse found"), 0x80);
+                                                                if(classOfDevice[0] & 0x40)
+                                                                        Notify(PSTR("\r\nKeyboard found"), 0x80);
+                                                                if(classOfDevice[0] & 0x08)
+                                                                        Notify(PSTR("\r\nGamepad found"), 0x80);
+                                                                if(classOfDevice[0] & 0x04)
+                                                                        Notify(PSTR("\r\nJoystick found"), 0x80);
+#endif
+                                                                for(uint8_t k = 0; k < 6; k++) {
+                                                                        disc_bdaddr[k] = hcibuf[k + 3 + 6 * i];
+                                                                }
+#ifdef DEBUG_USB_HOST
+                                                                Notify(PSTR("\r\nBD_ADDR: "), 0x80);
+                                                                for(int8_t n = 5; n > 0; n--) {
+                                                                        D_PrintHex<uint8_t > (disc_bdaddr[n], 0x80);
+                                                                        Notify(PSTR(":"), 0x80);
+                                                                }
+                                                                D_PrintHex<uint8_t > (disc_bdaddr[0], 0x80);
+#endif
+                                                                hci_set_flag(HCI_FLAG_HID_DEVICE_FOUND);
+                                                                break;
+                                                        }
                                                 }
                                         }
                                 }
@@ -481,7 +542,7 @@ void BTDSSP::HCI_event_task() {
                                                 if(remote_name[i] == '\0') // End of string
                                                         break;
                                         }
-                                        // TODO: Altid sæt '\0' i remote name!
+                                        // TODO: Always set '\0' in remote name!
 #ifdef DEBUG_USB_HOST
                                         Notify(PSTR("\r\nRemote Name: "), 0x80);
                                         for(uint8_t i = 0; i < strlen(remote_name); i++){
@@ -494,11 +555,14 @@ void BTDSSP::HCI_event_task() {
 
 
                         case EV_CONNECTION_REQUEST:
-                                for(uint8_t i = 0; i < 6; i++)
-                                        disc_bdaddr[i] = hcibuf[i + 2];
 
-                                for(uint8_t i = 0; i < 3; i++)
+                                for(uint8_t i = 0; i < 6; i++) {
+                                        disc_bdaddr[i] = hcibuf[i + 2];
+                                }
+
+                                for(uint8_t i = 0; i < 3; i++) {
                                         classOfDevice[i] = hcibuf[i + 8];
+                                }
 #ifdef EXTRADEBUG
                                 Notify(PSTR("\r\nEV_CONNECTION_REQUEST"), 0x80);
                                 Notify(PSTR("\r\nClass of device: "), 0x80);
@@ -508,7 +572,7 @@ void BTDSSP::HCI_event_task() {
                                 Notify(PSTR(" "), 0x80);
                                 D_PrintHex<uint8_t > (classOfDevice[0], 0x80);
 #endif
-                                if((classOfDevice[1] & 0x05) && (classOfDevice[0] & 0xCC)) { // Check if it is a mouse, keyboard, gamepad or joystick
+                                if(((classOfDevice[1] & 0x0F) == 0x05) && (classOfDevice[0] & 0xCC)) { // Check if it is a mouse, keyboard, gamepad or joystick
 #ifdef DEBUG_USB_HOST
                                         if(classOfDevice[0] & 0x80)
                                                 Notify(PSTR("\r\nMouse is connecting"), 0x80);
@@ -559,16 +623,15 @@ void BTDSSP::HCI_event_task() {
 #endif
                                 if( (!pairWithHIDDevice) || (incomingHIDDevice) ){
                                         for(uint8_t i = 0; i < 16; i++) {
-                                                link_key[i] = EEPROM.read(i + 6);
+                                                link_key[i] = paired_link_key[i];
                                         }
 #ifdef DEBUG_USB_HOST
-                                        Notify(PSTR("\r\nEEPROM.read Link Key: "), 0x80);
-/*
-                                        for(uint8_t i = 0; i < 16; i++) {
-                                                Notify(PSTR(" "), 0x80);
+                                        Notify(PSTR("\r\nPaired Link Key: "), 0x80);
+                                        for(uint8_t i = 15; i > 0; i--) {
                                                 D_PrintHex<uint8_t > (link_key[i], 0x80);
+                                                Notify(PSTR(":"), 0x80);
                                         }
-*/
+                                        D_PrintHex<uint8_t > (link_key[0], 0x80);
 #endif
                                         hci_link_key_request_reply();
 #ifdef DEBUG_USB_HOST
@@ -604,20 +667,30 @@ void BTDSSP::HCI_event_task() {
 #endif
 #ifdef EXTRADEBUG
                                 Notify(PSTR("\r\nNumeric value: "), 0x80);
-                                for(uint8_t i = 0; i < 4; i++) {
-                                        Notify(PSTR(" "), 0x80);
+                                for(uint8_t i = 3; i > 0; i--) {
                                         D_PrintHex<uint8_t > (hcibuf[8 + i], 0x80);
+                                        Notify(PSTR(" "), 0x80);
                                 }
+                                D_PrintHex<uint8_t > (hcibuf[8], 0x80);
 #endif
                                 hci_user_confirmation_request_reply();
                                 break;
 
                         case EV_SIMPLE_PAIRING_COMPLETE:// < UseSimplePairing
+                                if(!hcibuf[2]) { // Check if pairing was Complete
 /*
 #ifdef DEBUG_USB_HOST
                                 Notify(PSTR("\r\nSimple Pairing Complete"), 0x80);
 #endif
 */
+                                } else {
+#ifdef DEBUG_USB_HOST
+                                        Notify(PSTR("\r\nPairing Failed: "), 0x80);
+                                        D_PrintHex<uint8_t > (hcibuf[2], 0x80);
+#endif
+                                        hci_disconnect(hci_handle);
+                                        hci_state = HCI_DISCONNECT_STATE;
+                                }
                                 break;
 
                         case EV_LINK_KEY_NOTIFICATION:// < UseSimplePairing
@@ -628,44 +701,24 @@ void BTDSSP::HCI_event_task() {
                                         link_key[i] = hcibuf[8 + i];
                                 }
 
+                                memcpy(connect_bdaddr, disc_bdaddr, 6);
+                                memcpy(paired_link_key, link_key, 16);
+
+                                linkkeyNotification = true;
 #ifdef EXTRADEBUG
-/*
                                 Notify(PSTR("\r\nBD_ADDR: "), 0x80);
-                                for(uint8_t i = 0; i < 6; i++) {
-                                        Notify(PSTR(" "), 0x80);
-                                        D_PrintHex<uint8_t > (hcibuf[2 + i], 0x80);
-                                }
-                                Notify(PSTR("\r\nLink Key for the associated BD_ADDR: "), 0x80);
-                                for(uint8_t i = 0; i < 16; i++) {
-                                        Notify(PSTR(" "), 0x80);
-                                        D_PrintHex<uint8_t > (hcibuf[8 + i], 0x80);
-                                }
-*/
-#endif
-                                for(uint8_t i = 0; i < 6; i++) {
-                                        EEPROM.write(i, disc_bdaddr[i]);
-                                }
-#ifdef EXTRADEBUG
-                                Notify(PSTR("\r\nEEPROM.write disc_bdaddr: "), 0x80);
                                 for(int8_t i = 5; i > 0; i--) {
-                                        D_PrintHex<uint8_t > (disc_bdaddr[i], 0x80);
-                                        Notify(PSTR(":"), 0x80);
-                                }
-                                D_PrintHex<uint8_t > (disc_bdaddr[0], 0x80);
-#endif
-                                for(uint8_t i = 0; i < 16; i++) {
-                                        EEPROM.write(i + 6, link_key[i]);
-                                }
-#ifdef EXTRADEBUG
-                                Notify(PSTR("\r\nEEPROM.write link_key: "), 0x80);
-/*
-                                for(uint8_t i = 0; i < 16; i++) {
+                                        D_PrintHex<uint8_t > (hcibuf[2 + i], 0x80);
                                         Notify(PSTR(" "), 0x80);
-                                        D_PrintHex<uint8_t > (link_key[i], 0x80);
                                 }
-*/                              
-                                Notify(PSTR("\r\nLink key Stored to Arduino EEPROM"), 0x80);
-#endif                                                     
+                                D_PrintHex<uint8_t > (hcibuf[2], 0x80);
+                                Notify(PSTR("\r\nLink Key for the associated BD_ADDR: "), 0x80);
+                                for(uint8_t i = 15; i > 0; i--) {
+                                        D_PrintHex<uint8_t > (hcibuf[8 + i], 0x80);
+                                        Notify(PSTR(" "), 0x80);
+                                }
+                                D_PrintHex<uint8_t > (hcibuf[8], 0x80);
+#endif
                                 break;
 
 
@@ -699,7 +752,7 @@ void BTDSSP::HCI_event_task() {
 #endif
 */                                
                                         hci_state = HCI_DONE_STATE;
-                                        } else {
+                                } else {
 #ifdef DEBUG_USB_HOST
                                         Notify(PSTR("\r\nPairing Failed: "), 0x80);
                                         D_PrintHex<uint8_t > (hcibuf[2], 0x80);
@@ -812,8 +865,8 @@ void BTDSSP::HCI_task() {
 #ifdef DEBUG_USB_HOST
                                 Notify(PSTR("\r\nWrite class of device"), 0x80);
 #endif
-                                if(btdsspName != NULL) {
-                                        hci_write_local_name(btdsspName);
+                                if(btdName != NULL) {
+                                        hci_write_local_name(btdName);
                                         hci_state = HCI_WRITE_NAME_STATE;
                                 } else {
                                         hci_write_simple_pairing_mode();
@@ -829,7 +882,7 @@ void BTDSSP::HCI_task() {
                         if(hci_check_flag(HCI_FLAG_CMD_COMPLETE)) {
 #ifdef DEBUG_USB_HOST
                                 Notify(PSTR("\r\nThe name was set to: "), 0x80);
-                                NotifyStr(btdsspName, 0x80);
+                                NotifyStr(btdName, 0x80);
 #endif
                                 hci_write_simple_pairing_mode();
                                 hci_state = HCI_WRITE_SIMPLE_PAIRING_STATE;
@@ -846,7 +899,7 @@ void BTDSSP::HCI_task() {
 #endif
                                 hci_set_event_mask();
                                 hci_state = HCI_SET_EVENT_MASK_STATE;
-                       }
+                        }
                         break;
 
 
@@ -930,10 +983,23 @@ void BTDSSP::HCI_task() {
                 case HCI_CHECK_DEVICE_SERVICE:
 #ifdef DEBUG_USB_HOST
                         Notify(PSTR("\r\nHCI_CHECK_DEVICE_SERVICE"), 0x80);
+#endif
+//// check addr & key
+                        if (memcmp(connect_bdaddr, zero_bdaddr, sizeof(connect_bdaddr)) != 0) {
+                                connectAddressIsSet = 1;
+                        }
+
+                        if (memcmp(paired_link_key, zero_link_key, sizeof(paired_link_key)) == 0) {
+                                pairWithHIDDevice = 1; //pairing mode
+                        }
+///
+#ifdef DEBUG_USB_HOST
+                        Notify(PSTR("\r\nconnectAddressIsSet = "), 0x80);
+                        D_PrintHex<uint8_t > (connectAddressIsSet, 0x80);
                         Notify(PSTR("\r\npairWithHIDDevice = "), 0x80);
                         D_PrintHex<uint8_t > (pairWithHIDDevice, 0x80);
 #endif
-                        if(pairWithHIDDevice) {
+                        if(pairWithHIDDevice) {//pairing mode
 #ifdef DEBUG_USB_HOST
                                 Notify(PSTR("\r\nPlease enable discovery of your device."), 0x80);
 #endif
@@ -957,7 +1023,7 @@ void BTDSSP::HCI_task() {
 //                                for(uint8_t i = 0; i < strlen(remote_name); i++)
 //                                        Notifyc(remote_name[i], 0x80);
 #endif
-                                if(pairWithHIDDevice){
+                                if(pairWithHIDDevice){//pairing mode
 
                                         hci_state = HCI_CONNECT_DEVICE_STATE;
                                     
@@ -972,7 +1038,7 @@ void BTDSSP::HCI_task() {
 
 
                 case HCI_INQUIRY_STATE:
-                        if(hci_check_flag(HCI_FLAG_DEVICE_FOUND)) {
+                        if(hci_check_flag(HCI_FLAG_HID_DEVICE_FOUND)) {
                                 hci_inquiry_cancel(); // Stop inquiry
 #ifdef DEBUG_USB_HOST
                                 Notify(PSTR("\r\nHID device found"), 0x80);
@@ -1054,15 +1120,21 @@ void BTDSSP::HCI_task() {
                                 Notify(PSTR(":"), 0x80);
                         }
                         D_PrintHex<uint8_t > (disc_bdaddr[0], 0x80);
+
+                        Notify(PSTR("\r\nconnect_bdaddr: "), 0x80);
+                        for(int8_t i = 5; i > 0; i--) {
+                                D_PrintHex<uint8_t > (connect_bdaddr[i], 0x80);
+                                Notify(PSTR(":"), 0x80);
+                        }
+                        D_PrintHex<uint8_t > (connect_bdaddr[0], 0x80);
 #endif
 ////////Check if the device is already paired.
-                        pairedDevice = true;
-                        for(uint8_t i = 0; i < 6; i++) {
-                                if(disc_bdaddr[i] != EEPROM.read(i)) {
-                                            pairedDevice = false;
-                                            break;
-                                }
+                        if (memcmp(disc_bdaddr, connect_bdaddr, sizeof(disc_bdaddr)) == 0) {
+                                pairedDevice = true;
+                        } else {
+                                pairedDevice = false;
                         }
+
                         if(!pairedDevice){
 #ifdef DEBUG_USB_HOST
                                 Notify(PSTR("\r\nConnection request device is not paired."), 0x80);
@@ -1150,6 +1222,7 @@ void BTDSSP::HCI_task() {
                         memset(l2capinbuf, 0, BULK_MAXPKTSIZE);
 
                         connectToHIDDevice = incomingHIDDevice = pairWithHIDDevice = false;
+                        linkkeyNotification = false;
 
                         hci_state = HCI_SCANNING_STATE;
 #ifdef DEBUG_USB_HOST
@@ -1209,7 +1282,7 @@ void BTDSSP::hci_write_scan_enable() {
         hcibuf[0] = 0x1A; // HCI OCF = 1A
         hcibuf[1] = 0x03 << 2; // HCI OGF = 3
         hcibuf[2] = 0x01; // parameter length = 1
-        if(btdsspName != NULL){
+        if(btdName != NULL){
                 hcibuf[3] = 0x03; // Inquiry Scan enabled. Page Scan enabled.
 #ifdef EXTRADEBUG
                 Notify(PSTR("\r\nInquiry Scan enabled. Page Scan enabled."), 0x80);
@@ -1439,7 +1512,7 @@ void BTDSSP::hci_set_connection_encryption(uint16_t handle) {
 }
 
 void BTDSSP::hci_inquiry() {
-        hci_clear_flag(HCI_FLAG_DEVICE_FOUND);
+        hci_clear_flag(HCI_FLAG_HID_DEVICE_FOUND);
         hcibuf[0] = 0x01;
         hcibuf[1] = 0x01 << 2; // HCI OGF = 1
         hcibuf[2] = 0x05; // Parameter Total Length = 5
@@ -1673,4 +1746,3 @@ void BTDSSP::l2cap_information_response(uint16_t handle, uint8_t rxid, uint8_t i
 
         L2CAP_Command(handle, l2capoutbuf, 12);
 }
-

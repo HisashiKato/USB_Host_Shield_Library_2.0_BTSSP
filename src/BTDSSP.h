@@ -23,7 +23,6 @@
 
 #include "Usb.h"
 #include "usbhid.h"
-#include <EEPROM.h>
 
 /* Bluetooth dongle data taken from descriptors */
 #define BULK_MAXPKTSIZE         64 // Max size for ACL data
@@ -68,7 +67,7 @@
 #define HCI_FLAG_DISCONNECT_COMPLETE    (1UL << 2)
 #define HCI_FLAG_REMOTE_NAME_COMPLETE   (1UL << 3)
 #define HCI_FLAG_INCOMING_REQUEST       (1UL << 4)
-#define HCI_FLAG_DEVICE_FOUND           (1UL << 5)
+#define HCI_FLAG_HID_DEVICE_FOUND       (1UL << 5)
 #define HCI_FLAG_CONNECT_EVENT          (1UL << 6)
 
 
@@ -429,19 +428,14 @@ public:
         bool rfcommConnectionClaimed;
 
         /** The name you wish to make the dongle show up as. It is set automatically by the SPP library. */
-        const char* btdsspName;
+        const char* btdName;
 
         /** HCI handle for the last connection. */
         uint16_t hci_handle;
         /** Last incoming devices Bluetooth address. */
         uint8_t disc_bdaddr[6];
-        /** Link key **/
-        uint8_t link_key[16];
-        /** Stored Bluetooth address. */
-        uint8_t stored_bdaddr[6];
         /** First 30 chars of last remote name. */
         char remote_name[30];
-
         /** Call this function to pair with a HID device */
         void pairWithHID() {
                 waitingForConnection = false;
@@ -457,6 +451,29 @@ public:
         /** True when the device is paired. */
         bool pairedDevice;
 
+        /** Device name of the device to be connected */
+        char connect_device_name[30];
+        /** Bluetooth address of the device to be connected. */
+        uint8_t connect_bdaddr[6];
+        /** Bluetooth SSP Link key **/
+        uint8_t paired_link_key[16];
+
+        const uint8_t zero_bdaddr[6] = {};
+        const uint8_t zero_link_key[16] = {};
+
+
+        /** Stored Bluetooth address. */
+//        uint8_t stored_bdaddr[6];
+        /** responded Device BD Address. */
+        uint8_t responded_bdaddr[6]; //
+        /** connected Device BD Address. */
+        uint8_t connected_bdaddr[6]; //
+        /** Generated Bluetooth SSP Link key **/
+        uint8_t link_key[16];
+
+        bool connectAddressIsSet;
+        bool linkkeyNotification;
+
 
         /**
          * Read the poll interval taken from the endpoint descriptors.
@@ -465,9 +482,12 @@ public:
         uint8_t readPollInterval() {
                 return pollInterval;
         };
-        
-		 
-		
+
+
+        /** Checking the array contents are not zero. */
+/*
+        bool BTcheckArrayNotZero(const uint8_t* array, uint8_t len);
+*/
 
 protected:
         /** Pointer to USB class instance. */
@@ -519,6 +539,7 @@ private:
         uint16_t hci_event_flag; // HCI flags of received Bluetooth events
         uint8_t inquiry_counter;
 
+//        uint8_t hciinbuf[BULK_MAXPKTSIZE]; // General purpose buffer for HCI in data
         uint8_t hcibuf[BULK_MAXPKTSIZE]; // General purpose buffer for HCI data
         uint8_t l2capinbuf[BULK_MAXPKTSIZE]; // General purpose buffer for L2CAP in data
         uint8_t l2capoutbuf[14]; // General purpose buffer for L2CAP out data
