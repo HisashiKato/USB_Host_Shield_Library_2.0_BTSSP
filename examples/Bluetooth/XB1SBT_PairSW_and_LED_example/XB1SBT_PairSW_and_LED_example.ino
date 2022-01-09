@@ -229,6 +229,11 @@ void loop() {
     if (Xb1s.buttonClick(A)) {
       Serial.println(F("A"));
     }
+    if (Xb1s.buttonData(A)) {
+      digitalWrite(extLedPin, HIGH);
+    } else {
+      digitalWrite(extLedPin, LOW);
+    }
     if (Xb1s.buttonClick(B)) {
       Serial.println(F("B"));
     }
