@@ -449,8 +449,9 @@ void BTDSSP::HCI_event_task() {
 #endif
                                                                 hci_set_flag(HCI_FLAG_HID_DEVICE_FOUND);
                                                                 break;
-#ifdef EXTRADEBUG
+
                                                         } else {
+#ifdef EXTRADEBUG
                                                                 Notify(PSTR("\r\nDevice BD address not match."), 0x80);
 #endif
                                                         }
