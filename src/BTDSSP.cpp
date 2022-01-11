@@ -453,7 +453,6 @@ void BTDSSP::HCI_event_task() {
                                                         } else {
                                                                 Notify(PSTR("\r\nDevice BD address not match."), 0x80);
 #endif
-                                                            
                                                         }
                                                          
 
