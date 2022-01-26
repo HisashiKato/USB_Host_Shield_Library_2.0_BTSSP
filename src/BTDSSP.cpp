@@ -745,12 +745,12 @@ void BTDSSP::HCI_event_task() {
                                         }
 
                                         hci_set_connection_encryption(hci_handle);
-/*                                
+                                
 #ifdef DEBUG_USB_HOST
                                         Notify(PSTR("\r\nhci_set_connection_encryption(ON)"), 0x80);
                                         D_PrintHex<uint16_t > (hci_handle, 0x80);
 #endif
-*/                                
+                               
                                         hci_state = HCI_DONE_STATE;
                                 } else {
 #ifdef DEBUG_USB_HOST
@@ -1161,9 +1161,12 @@ void BTDSSP::HCI_task() {
                                         Notify(PSTR(":"), 0x80);
                                 }
                                 D_PrintHex<uint8_t > (disc_bdaddr[0], 0x80);
+#endif
 
-//                                Notify(PSTR("\r\nhci_authentication_requested(hci_handle)"), 0x80);
-//                                D_PrintHex<uint16_t > (hci_handle, 0x80);
+                                hci_set_connection_encryption(hci_handle);
+#ifdef DEBUG_USB_HOST
+                                Notify(PSTR("\r\nhci_set_connection_encryption(ON)"), 0x80);
+                                D_PrintHex<uint16_t > (hci_handle, 0x80);
 #endif
                                 // Clear these flags for a new connection
                                 l2capConnectionClaimed = false;
