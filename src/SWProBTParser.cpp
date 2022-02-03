@@ -30,7 +30,7 @@
 
 #define SWProBT_SUBCMD_SET_REPORT_MODE 0x03
 #define SWProBT_SUBCMD_SET_LED         0x30
-#define SWProBT_SUBCMD_EABLE_RUMBLE    0x48
+#define SWProBT_SUBCMD_ENABLE_RUMBLE   0x48
 
 #define SWProBT_STANDARD_FULL 0x30 // x30 Standard full mode
 #define SWProBT_NFC_IR        0x31 // x31 NFC/IR mode
@@ -96,29 +96,37 @@ void SWProBTParser::Parse(uint8_t len, uint8_t *buf) {
                 } else if (buf[0] == SWProBT_SUBCMD_ACK) { // ID 0x21 
                         memcpy(&swprobtReceivedSubCommandAck, buf + 1, min((uint8_t)(len - 1), MFK_CASTUINT8T sizeof(swprobtReceivedSubCommandAck)));
 
-                        switch(swprobtReceivedSubCommandAck.replySubCommand) {
-/*
-                                case SWProBT_SUBCMD_SET_LED:
-                                        swprobtSendConfigData.gpnum = sw_gpnum;
-                                        swprobtSendConfigData.subCommand = SWProBT_SUBCMD_EABLE_RUMBLE;
-                                        swprobtSendConfigData.subCommandData[0] = 0x00; // 0x00:Disable 0x01:Enable
+                        if (initComplete == 0) {
 
-                                        sendConfigData(&swprobtSendConfigData);
-                                        break;
-*/
-                                case SWProBT_SUBCMD_EABLE_RUMBLE:
-                                        swprobtSendConfigData.gpnum = sw_gpnum;
-                                        swprobtSendConfigData.subCommand = SWProBT_SUBCMD_SET_REPORT_MODE;
-                                        swprobtSendConfigData.subCommandData[0] = SWProBT_SIMPLE_HID;
+                                switch(swprobtReceivedSubCommandAck.replySubCommand) {
+                                        case SWProBT_SUBCMD_SET_REPORT_MODE:
+#ifdef DEBUG_USB_HOST
+                                                Notify(PSTR("\r\nInitSET_REPORT_MODE:Comp"), 0x80);
+#endif
+                                                setEnableRumble(0x01); // 0x00:Disable 0x01:Enable
+                                                break;
 
-                                        sendConfigData(&swprobtSendConfigData);
-                                        break;
+                                        case SWProBT_SUBCMD_ENABLE_RUMBLE:
+#ifdef DEBUG_USB_HOST
+                                                Notify(PSTR("\r\nInitENABLE_RUMBLE:Comp"), 0x80);
+#endif
+                                                setPlayerLED(0b00001111); // 0b00001111
+                                                break;
 
-                                case SWProBT_SUBCMD_SET_REPORT_MODE:
-                                        break;
+                                        case SWProBT_SUBCMD_SET_LED:
+#ifdef DEBUG_USB_HOST
+                                                Notify(PSTR("\r\nInitSET_LED:Comp"), 0x80);
+#endif
+                                                initComplete = 1;
+#ifdef DEBUG_USB_HOST
+                                                Notify(PSTR("\r\nInitComplete\n"), 0x80);
+#endif
+                                                break;
+                                }
+
+                        } else {
 
                         }
-
                 } else {
 #ifdef DEBUG_USB_HOST
                         Notify(PSTR("\r\nUnsupported report id: "), 0x80);
@@ -155,6 +163,22 @@ void SWProBTParser::sendReport(uint8_t *data, uint8_t datasize) {
 
 }
 
+void SWProBTParser::setReportMode(uint8_t mode) {
+        swprobtSendConfigData.gpnum = sw_gpnum;
+        swprobtSendConfigData.subCommand = SWProBT_SUBCMD_SET_REPORT_MODE;
+        swprobtSendConfigData.subCommandData[0] = mode;
+
+        sendConfigData(&swprobtSendConfigData);
+}
+
+void SWProBTParser::setEnableRumble(uint8_t mode) {
+
+        swprobtSendConfigData.gpnum = sw_gpnum;
+        swprobtSendConfigData.subCommand = SWProBT_SUBCMD_ENABLE_RUMBLE;
+        swprobtSendConfigData.subCommandData[0] = mode; // 0x00:Disable 0x01:Enable
+
+        sendConfigData(&swprobtSendConfigData);
+}
 
 void SWProBTParser::setPlayerLED(uint8_t led) {
         swprobtSendConfigData.gpnum = sw_gpnum;
@@ -194,16 +218,9 @@ void SWProBTParser::setSimpleRumble() {
 }
 
 
-
-
 void SWProBTParser::Init() {
-        setPlayerLED(0b00001111); // 0b00001111
-
-        swprobtSendConfigData.gpnum = sw_gpnum;
-        swprobtSendConfigData.subCommand = SWProBT_SUBCMD_EABLE_RUMBLE;
-        swprobtSendConfigData.subCommandData[0] = 0x01; // 0x00:Disable 0x01:Enable
-
-        sendConfigData(&swprobtSendConfigData);
+        initComplete = 0;
+        setReportMode(SWProBT_SIMPLE_HID);
 }
 
 void SWProBTParser::Reset() {

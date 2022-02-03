@@ -46,7 +46,10 @@ public:
          * @return Returns true if it is connected.
          */
         bool connected() {
-                return BTHIDs::connected;
+                if (BTHIDs::connected && SWProBTParser::initComplete) {
+                        return true;
+                }
+                return false;
         };
 
 protected:

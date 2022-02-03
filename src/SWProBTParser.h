@@ -124,7 +124,6 @@ struct SWProBTReceivedData {
 
 //-----------------------------------
 
-//#define BT_HIDP_SW_SUBCMD_ACK 0x21
 struct SWProBTReceivedSubCommandAck {
         uint8_t replyData[13];
         uint8_t replySubCommand;
@@ -133,9 +132,8 @@ struct SWProBTReceivedSubCommandAck {
 
 
 
-
 struct SWProBTSendConfigData {
-        uint8_t gpnum;
+        uint8_t gpnum; //GlobalPacketNumber
         uint8_t rumbleDataL[4];
         uint8_t rumbleDataR[4];
         uint8_t subCommand;
@@ -211,6 +209,8 @@ protected:
 
         void Init();
 
+        bool initComplete;
+
         virtual void sendReport(uint8_t *data, uint8_t datasize);
 
 
@@ -223,6 +223,9 @@ private:
         SWProBTSendConfigData swprobtSendConfigData;
         SWProBTReceivedSubCommandAck swprobtReceivedSubCommandAck;
         uint8_t sw_gpnum = 0;
+
+        void setReportMode(uint8_t mode);
+        void setEnableRumble(uint8_t mode);
 
         void setPlayerLED(uint8_t led);
         void setSimpleRumble();
