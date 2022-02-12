@@ -214,6 +214,8 @@ void loop() {
 
     if (SWPro.buttonClick(HOME)) {
       Serial.println(F("HOME"));
+      Serial.println(F("Disconnect!"));
+      SWPro.disconnect();
     }
     if (SWPro.buttonClick(CAPTURE)) {
       Serial.println(F("CAPTURE"));
