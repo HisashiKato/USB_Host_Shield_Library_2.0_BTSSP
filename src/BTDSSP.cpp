@@ -1162,7 +1162,7 @@ void BTDSSP::HCI_task() {
                                 }
                                 D_PrintHex<uint8_t > (disc_bdaddr[0], 0x80);
 #endif
-
+                                connectToHIDDevice = true;
                                 hci_set_connection_encryption(hci_handle);
 #ifdef DEBUG_USB_HOST
                                 Notify(PSTR("\r\nhci_set_connection_encryption(ON)"), 0x80);
