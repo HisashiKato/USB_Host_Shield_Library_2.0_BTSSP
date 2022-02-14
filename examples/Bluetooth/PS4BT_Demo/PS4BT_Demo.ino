@@ -2,7 +2,10 @@
  Example sketch for the PS4 Bluetooth library - developed by Kristian Lauszus
  For more information visit my blog: http://blog.tkjelectronics.dk/ or
  send me an e-mail:  kristianl@tkjelectronics.com
- */
+ 
+ Modified by HisashiKato
+ Web:  http://kato-h.cocolog-nifty.com/khweblog/
+*/
 
 #include <PS4BT.h>
 #include <usbhub.h>
@@ -35,6 +38,7 @@ USB Usb;
 BTDSSP Btdssp(&Usb); // You have to create the Bluetooth Dongle instance like so
 PS4BT PS4(&Btdssp);
 
+
 byte ssp_bdaddr[6];
 byte ssp_link_key[16];
 
@@ -55,7 +59,8 @@ void setup() {
     Serial.print(F("\r\nOSC did not start"));
     while (1); // Halt
   }
-  Serial.print(F("\r\nPS4 Bluetooth Library Started"));
+  Serial.print(F("\r\nPS4 Bluetooth Library Started\r\n"));
+
 
 #ifdef ENABLE_PAIR
   Serial.println(F("Pairing is in progress."));
