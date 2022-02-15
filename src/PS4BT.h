@@ -148,7 +148,7 @@ protected:
          */
         virtual void OnInitBTHIDs() {
                 PS4Parser::Reset();
-//              enable_sixaxis(); // I removed this line as a test. It may work without this line
+              //enable_sixaxis(); // I removed this line as a test. It may work without this line
                 if (!pFuncOnInit)
                         setLed(Blue); // Only call this is a user function has not been set
         };
@@ -164,15 +164,15 @@ protected:
                 uint8_t buf[79];
                 memset(buf, 0, sizeof(buf));
 
-//              buf[0] = 0x52; // HID BT Set_report (0x50) | Report Type (Output 0x02) // Source: https://github.com/chrippa/ds4drv
+              //buf[0] = 0x52; // HID BT Set_report (0x50) | Report Type (Output 0x02) // Source: https://github.com/chrippa/ds4drv
                 buf[0] = 0xA2; // HID BT Set_report (0xA0) | Report Type (Output 0x02) // Source: https://www.psdevwiki.com/ps4/DS4-BT
                 buf[1] = 0x11; // Report ID
 
                 buf[2] = 0x80;
-//              buf[3] = 0x00;
+              //buf[3] = 0x00;
                 buf[4] = 0xFF;
-//              buf[5] = 0x00;
-//              buf[6] = 0x00;
+              //buf[5] = 0x00;
+              //buf[6] = 0x00;
 
                 buf[7] = output->smallRumble; // Small Rumble
                 buf[8] = output->bigRumble; // Big rumble
