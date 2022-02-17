@@ -340,6 +340,7 @@ uint8_t BTDSSP::Poll() {
                 HCI_event_task(); // Poll the HCI event pipe
                 HCI_task(); // HCI state machine
                 ACL_event_task(); // Poll the ACL input pipe too
+                memset(hcibuf, 0, BULK_MAXPKTSIZE); // Clear hcibuf
         }
         return 0;
 }
@@ -602,10 +603,11 @@ void BTDSSP::HCI_event_task() {
                                         Notify(PSTR(" "), 0x80);
                                         D_PrintHex<uint8_t > (hcibuf[2], 0x80);
                                 Notify(PSTR("\r\nBD_ADDR: "), 0x80);
-                                for(uint8_t i = 0; i < 6; i++) {
+                                for(uint8_t i = 5; i > 0; i--) {
                                         Notify(PSTR(" "), 0x80);
                                         D_PrintHex<uint8_t > (hcibuf[3 + i], 0x80);
                                 }
+                                D_PrintHex<uint8_t > (hcibuf[3], 0x80);
 #endif
 */
                                 break;
@@ -654,11 +656,11 @@ void BTDSSP::HCI_event_task() {
                                 break;
 
                         case EV_IO_CAPABILITY_RESPONSE:// < UseSimplePairing
-/*
+
 #ifdef DEBUG_USB_HOST
                                 Notify(PSTR("\r\nReceived IO Capability Response: "), 0x80);
 #endif
-*/
+
                                 break;
 
                         case EV_USER_CONFIRMATION_REQUEST:
@@ -678,11 +680,11 @@ void BTDSSP::HCI_event_task() {
 
                         case EV_SIMPLE_PAIRING_COMPLETE:// < UseSimplePairing
                                 if(!hcibuf[2]) { // Check if pairing was Complete
-/*
+
 #ifdef DEBUG_USB_HOST
-                                Notify(PSTR("\r\nSimple Pairing Complete"), 0x80);
+                                        Notify(PSTR("\r\nSimple Pairing Complete"), 0x80);
 #endif
-*/
+
                                 } else {
 #ifdef DEBUG_USB_HOST
                                         Notify(PSTR("\r\nPairing Failed: "), 0x80);
