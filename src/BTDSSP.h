@@ -193,6 +193,17 @@
 #define PAIR    1
 
 
+// hci_write_scan_enable
+#define NO_SCANS_ENABLED                        0x00
+#define INQUIRY_SCAN_DISABLED_PAGE_SCAN_ENABLED 0x02
+#define INQUIRY_SCAN_ENABLED_PAGE_SCAN_ENABLED  0x03  
+
+
+
+
+
+
+
 class BluetoothService;
 
 /**
@@ -309,9 +320,10 @@ public:
         void hci_set_event_mask();
 
     	/** Enable visibility to other Bluetooth devices. */
-        void hci_write_scan_enable();
+//        void hci_write_scan_enable();
+        void hci_write_scan_enable(uint8_t scan_enable);
         /** Disable visibility to other Bluetooth devices. */
-        void hci_write_scan_disable();
+//        void hci_write_scan_disable();
         /** Read the remote devices name. */
         void hci_remote_name_request();
         /** Accept the connection with the Bluetooth device. */
@@ -539,8 +551,8 @@ private:
         uint16_t hci_event_flag; // HCI flags of received Bluetooth events
         uint8_t inquiry_counter;
 
-//        uint8_t hciinbuf[BULK_MAXPKTSIZE]; // General purpose buffer for HCI in data
         uint8_t hcibuf[BULK_MAXPKTSIZE]; // General purpose buffer for HCI data
+        uint8_t hcioutbuf[BULK_MAXPKTSIZE]; // General purpose buffer for HCI out data
         uint8_t l2capinbuf[BULK_MAXPKTSIZE]; // General purpose buffer for L2CAP in data
         uint8_t l2capoutbuf[14]; // General purpose buffer for L2CAP out data
 
