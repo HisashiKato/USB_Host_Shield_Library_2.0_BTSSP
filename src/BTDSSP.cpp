@@ -22,6 +22,7 @@
 // To enable serial debugging see "settings.h"
 //#define EXTRADEBUG // Uncomment to get even more debugging data
 
+
 const uint8_t BTDSSP::BTDSSP_CONTROL_PIPE = 0;
 const uint8_t BTDSSP::BTDSSP_EVENT_PIPE = 1;
 const uint8_t BTDSSP::BTDSSP_DATAIN_PIPE = 2;
@@ -341,6 +342,7 @@ uint8_t BTDSSP::Poll() {
                 HCI_task(); // HCI state machine
                 ACL_event_task(); // Poll the ACL input pipe too
                 memset(hcibuf, 0, BULK_MAXPKTSIZE); // Clear hcibuf
+                memset(hcioutbuf, 0, BULK_MAXPKTSIZE); // Clear hcioutbuf
         }
         return 0;
 }
@@ -356,6 +358,15 @@ void BTDSSP::HCI_event_task() {
         uint8_t rcode = pUsb->inTransfer(bAddress, epInfo[ BTDSSP_EVENT_PIPE ].epAddr, &length, hcibuf, pollInterval); // Input on endpoint 1
 
         if(!rcode || rcode == hrNAK) { // Check for errors
+#ifdef EXTRADEBUG
+                if( (length > 0 ) && (hcibuf[0] != 0 ) ){
+                        Notify(PSTR("\r\nHCIEVT "), 0x80);
+                        for(uint16_t i = 0; i < length; i++) {
+                                Notify(PSTR(":"), 0x80);
+                                D_PrintHex<uint8_t > (hcibuf[i], 0x80);
+                        }
+                }
+#endif
                 switch(hcibuf[0]) { // Switch on event type
                         case EV_COMMAND_COMPLETE:
                                 if(!hcibuf[5]) { // Check if command succeeded
@@ -452,7 +463,7 @@ void BTDSSP::HCI_event_task() {
                                                                 break;
 
                                                         } else {
-#ifdef EXTRADEBUG
+#ifdef DEBUG_USB_HOST
                                                                 Notify(PSTR("\r\nDevice BD address not match."), 0x80);
 #endif
                                                         }
@@ -851,6 +862,10 @@ void BTDSSP::HCI_task() {
 
                         } else if(hci_counter > hci_num_reset_loops) {
                                 hci_num_reset_loops *= 10;
+#ifdef DEBUG_USB_HOST
+                                        Notify(PSTR("\r\nhci_num_reset_loops: "), 0x80);
+                                        D_PrintHex<uint8_t > (hci_num_reset_loops, 0x80);
+#endif
                                 if(hci_num_reset_loops > 2000)
                                         hci_num_reset_loops = 2000;
 #ifdef DEBUG_USB_HOST
@@ -1094,7 +1109,26 @@ void BTDSSP::HCI_task() {
                                 Notify(PSTR("\r\nWait For Incoming Connection Request"), 0x80);
 #endif
                                 waitingForConnection = true;
-                                hci_write_scan_enable();
+//                              hci_write_scan_enable();
+
+//------
+                                hci_clear_flag(HCI_FLAG_INCOMING_REQUEST);
+                                if(btdName != NULL){
+                                        // Inquiry Scan enabled. Page Scan enabled.
+                                        hci_write_scan_enable(INQUIRY_SCAN_ENABLED_PAGE_SCAN_ENABLED); //0x03
+#ifdef EXTRADEBUG
+                                        Notify(PSTR("\r\nBluetooth Local Name is set."), 0x80);
+                                        Notify(PSTR("\r\nInquiry Scan enabled. Page Scan enabled."), 0x80);
+#endif
+                                } else {
+                                        // Inquiry Scan disabled. Page Scan enabled.
+                                        hci_write_scan_enable(INQUIRY_SCAN_DISABLED_PAGE_SCAN_ENABLED); //0x02
+#ifdef EXTRADEBUG
+                                        Notify(PSTR("\r\nBluetooth Local Name is NULL."), 0x80);
+                                        Notify(PSTR("\r\nInquiry Scan disabled. Page Scan enabled."), 0x80);
+#endif
+                                }
+//------
                                 hci_state = HCI_CONNECT_IN_STATE;
                         }
                         break;
@@ -1268,83 +1302,130 @@ void BTDSSP::ACL_event_task() {
 /************************************************************/
 void BTDSSP::HCI_Command(uint8_t* data, uint16_t nbytes) {
         hci_clear_flag(HCI_FLAG_CMD_COMPLETE);
+#ifdef EXTRADEBUG
+        Notify(PSTR("\r\nHCICMD "), 0x80);
+        for(uint16_t i = 0; i < nbytes; i++) {
+                Notify(PSTR(":"), 0x80);
+                D_PrintHex<uint8_t > (data[i], 0x80);
+        }
+#endif
         pUsb->ctrlReq(bAddress, epInfo[ BTDSSP_CONTROL_PIPE ].epAddr, bmREQ_HCI_OUT, 0x00, 0x00, 0x00, 0x00, nbytes, nbytes, data, NULL);
 }
 
 void BTDSSP::hci_reset() {
         hci_event_flag = 0; // Clear all the flags
 
-        hcibuf[0] = 0x03; // HCI OCF = 3
-        hcibuf[1] = 0x03 << 2; // HCI OGF = 3
-        hcibuf[2] = 0x00;
+        hcioutbuf[0] = 0x03; // HCI OCF = 3
+        hcioutbuf[1] = 0x03 << 2; // HCI OGF = 3
+        hcioutbuf[2] = 0x00;
 
-        HCI_Command(hcibuf, 3);
+        HCI_Command(hcioutbuf, 3);
 }
 
-void BTDSSP::hci_write_scan_enable() {
+/*
+void BTDSSP::hci_write_scan() {
         hci_clear_flag(HCI_FLAG_INCOMING_REQUEST);
-
-        hcibuf[0] = 0x1A; // HCI OCF = 1A
-        hcibuf[1] = 0x03 << 2; // HCI OGF = 3
-        hcibuf[2] = 0x01; // parameter length = 1
         if(btdName != NULL){
-                hcibuf[3] = 0x03; // Inquiry Scan enabled. Page Scan enabled.
+#ifdef EXTRADEBUG
+                Notify(PSTR("\r\nBluetooth Local Name is set."), 0x80);
+#endif
+                // Inquiry Scan enabled. Page Scan enabled.
+                hci_write_scan_enable(INQUIRY_SCAN_ENABLED_PAGE_SCAN_ENABLED); //0x03
 #ifdef EXTRADEBUG
                 Notify(PSTR("\r\nInquiry Scan enabled. Page Scan enabled."), 0x80);
 #endif
-        }else{
-                hcibuf[3] = 0x02; // Inquiry Scan disabled. Page Scan enabled.
+        } else {
+                // Inquiry Scan disabled. Page Scan enabled.
+                hci_write_scan_enable(INQUIRY_SCAN_DISABLED_PAGE_SCAN_ENABLED); //0x02
 #ifdef EXTRADEBUG
                 Notify(PSTR("\r\nInquiry Scan disabled. Page Scan enabled."), 0x80);
 #endif
         }
-        HCI_Command(hcibuf, 4);
 }
 
 void BTDSSP::hci_write_scan_disable() {
-        hcibuf[0] = 0x1A; // HCI OCF = 1A
-        hcibuf[1] = 0x03 << 2; // HCI OGF = 3
-        hcibuf[2] = 0x01; // parameter length = 1
-        hcibuf[3] = 0x00; // Inquiry Scan disabled. Page Scan disabled.
-
-        HCI_Command(hcibuf, 4);
+        hci_write_scan_enable(NO_SCANS_ENABLED); //0x00
 }
+
+*/
+
+
+void BTDSSP::hci_write_scan_enable(uint8_t scan_enable) {
+        hcioutbuf[0] = 0x1A; // HCI OCF = 1A
+        hcioutbuf[1] = 0x03 << 2; // HCI OGF = 3
+        hcioutbuf[2] = 0x01; // parameter length = 1
+        hcioutbuf[3] = scan_enable; // configuration parameter
+
+        HCI_Command(hcioutbuf, 4);
+}
+
+
+/*
+void BTDSSP::hci_write_scan_enable() {
+        hci_clear_flag(HCI_FLAG_INCOMING_REQUEST);
+
+        hcioutbuf[0] = 0x1A; // HCI OCF = 1A
+        hcioutbuf[1] = 0x03 << 2; // HCI OGF = 3
+        hcioutbuf[2] = 0x01; // parameter length = 1
+        if(btdName != NULL){
+                hcioutbuf[3] = 0x03; // Inquiry Scan enabled. Page Scan enabled.
+#ifdef EXTRADEBUG
+                Notify(PSTR("\r\nInquiry Scan enabled. Page Scan enabled."), 0x80);
+#endif
+        }else{
+                hcioutbuf[3] = 0x02; // Inquiry Scan disabled. Page Scan enabled.
+#ifdef EXTRADEBUG
+                Notify(PSTR("\r\nInquiry Scan disabled. Page Scan enabled."), 0x80);
+#endif
+        }
+        HCI_Command(hcioutbuf, 4);
+}
+
+void BTDSSP::hci_write_scan_disable() {
+        hcioutbuf[0] = 0x1A; // HCI OCF = 1A
+        hcioutbuf[1] = 0x03 << 2; // HCI OGF = 3
+        hcioutbuf[2] = 0x01; // parameter length = 1
+        hcioutbuf[3] = 0x00; // Inquiry Scan disabled. Page Scan disabled.
+
+        HCI_Command(hcioutbuf, 4);
+}
+*/
 
 
 void BTDSSP::hci_accept_connection() {
         hci_clear_flag(HCI_FLAG_CONNECT_COMPLETE);
 
-        hcibuf[0] = 0x09; // HCI OCF = 0x09 HCI_Accept_Connection_Request command
-        hcibuf[1] = 0x01 << 2; // HCI OGF = 1
-        hcibuf[2] = 0x07; // parameter length 7
-        for(uint8_t i = 0; i < 6; i++) hcibuf[i + 3] = disc_bdaddr[i]; // 6 octet bdaddr
+        hcioutbuf[0] = 0x09; // HCI OCF = 0x09 HCI_Accept_Connection_Request command
+        hcioutbuf[1] = 0x01 << 2; // HCI OGF = 1
+        hcioutbuf[2] = 0x07; // parameter length 7
+        for(uint8_t i = 0; i < 6; i++) hcioutbuf[i + 3] = disc_bdaddr[i]; // 6 octet bdaddr
 //        hcibuf[3] = disc_bdaddr[0]; // 6 octet bdaddr
 //        hcibuf[4] = disc_bdaddr[1];
 //        hcibuf[5] = disc_bdaddr[2];
 //        hcibuf[6] = disc_bdaddr[3];
 //        hcibuf[7] = disc_bdaddr[4];
 //        hcibuf[8] = disc_bdaddr[5];
-        hcibuf[9] = 0x00; // Switch role to master
+        hcioutbuf[9] = 0x00; // Switch role to master
 
-        HCI_Command(hcibuf, 10);
+        HCI_Command(hcioutbuf, 10);
 }
 
 void BTDSSP::hci_reject_connection() {
 //        hci_clear_flag(HCI_FLAG_CONNECT_COMPLETE);
 
-        hcibuf[0] = 0x0A; // HCI OCF = 0x0A HCI_Reject_Connection_Request command
-        hcibuf[1] = 0x01 << 2; // HCI OGF = 1
-        hcibuf[2] = 0x07; // parameter length 7
-        for(uint8_t i = 0; i < 6; i++) hcibuf[i + 3] = disc_bdaddr[i]; // 6 octet bdaddr
+        hcioutbuf[0] = 0x0A; // HCI OCF = 0x0A HCI_Reject_Connection_Request command
+        hcioutbuf[1] = 0x01 << 2; // HCI OGF = 1
+        hcioutbuf[2] = 0x07; // parameter length 7
+        for(uint8_t i = 0; i < 6; i++) hcioutbuf[i + 3] = disc_bdaddr[i]; // 6 octet bdaddr
 //        hcibuf[3] = disc_bdaddr[0]; // 6 octet bdaddr
 //        hcibuf[4] = disc_bdaddr[1];
 //        hcibuf[5] = disc_bdaddr[2];
 //        hcibuf[6] = disc_bdaddr[3];
 //        hcibuf[7] = disc_bdaddr[4];
 //        hcibuf[8] = disc_bdaddr[5];
-        hcibuf[9] = 0x0F; // CONNECTION REJECTED DUE TO UNACCEPTABLE BD_ADDR
+        hcioutbuf[9] = 0x0F; // CONNECTION REJECTED DUE TO UNACCEPTABLE BD_ADDR
 
-        HCI_Command(hcibuf, 10);
+        HCI_Command(hcioutbuf, 10);
 }
 
 
@@ -1352,89 +1433,89 @@ void BTDSSP::hci_remote_name_request() {
 //void BTDSSP::hci_remote_name() {
         hci_clear_flag(HCI_FLAG_REMOTE_NAME_COMPLETE);
 
-        hcibuf[0] = 0x19; // HCI OCF = 19
-        hcibuf[1] = 0x01 << 2; // HCI OGF = 1
-        hcibuf[2] = 0x0A; // parameter length = 10
-        for(uint8_t i = 0; i < 6; i++) hcibuf[i + 3] = disc_bdaddr[i]; // 6 octet bdaddr
+        hcioutbuf[0] = 0x19; // HCI OCF = 19
+        hcioutbuf[1] = 0x01 << 2; // HCI OGF = 1
+        hcioutbuf[2] = 0x0A; // parameter length = 10
+        for(uint8_t i = 0; i < 6; i++) hcioutbuf[i + 3] = disc_bdaddr[i]; // 6 octet bdaddr
 //        hcibuf[3] = disc_bdaddr[0]; // 6 octet bdaddr
 //        hcibuf[4] = disc_bdaddr[1];
 //        hcibuf[5] = disc_bdaddr[2];
 //        hcibuf[6] = disc_bdaddr[3];
 //        hcibuf[7] = disc_bdaddr[4];
 //        hcibuf[8] = disc_bdaddr[5];
-        hcibuf[9] = 0x01; // Page Scan Repetition Mode
-        hcibuf[10] = 0x00; // Reserved
-        hcibuf[11] = 0x00; // Clock offset - low byte
-        hcibuf[12] = 0x00; // Clock offset - high byte
+        hcioutbuf[9] = 0x01; // Page Scan Repetition Mode
+        hcioutbuf[10] = 0x00; // Reserved
+        hcioutbuf[11] = 0x00; // Clock offset - low byte
+        hcioutbuf[12] = 0x00; // Clock offset - high byte
 
-        HCI_Command(hcibuf, 13);
+        HCI_Command(hcioutbuf, 13);
 }
 
 
 
 void BTDSSP::hci_write_local_name(const char* name) {
-        hcibuf[0] = 0x13; // HCI OCF = 13
-        hcibuf[1] = 0x03 << 2; // HCI OGF = 3
-        hcibuf[2] = strlen(name) + 1; // parameter length = the length of the string + end byte
+        hcioutbuf[0] = 0x13; // HCI OCF = 13
+        hcioutbuf[1] = 0x03 << 2; // HCI OGF = 3
+        hcioutbuf[2] = strlen(name) + 1; // parameter length = the length of the string + end byte
         uint8_t i;
         for(i = 0; i < strlen(name); i++)
-                hcibuf[i + 3] = name[i];
-        hcibuf[i + 3] = 0x00; // End of string
+                hcioutbuf[i + 3] = name[i];
+        hcioutbuf[i + 3] = 0x00; // End of string
 
-        HCI_Command(hcibuf, 4 + strlen(name));
+        HCI_Command(hcioutbuf, 4 + strlen(name));
 }
 
 
 void BTDSSP::hci_set_event_mask() {
-        hcibuf[0] = 0x01; // HCI OCF = 01
-        hcibuf[1] = 0x03 << 2; // HCI OGF = 3
-        hcibuf[2] = 0x08;
-        hcibuf[3] = 0xFF;
-        hcibuf[4] = 0xFF;
-        hcibuf[5] = 0xFF;
-        hcibuf[6] = 0xFF;
-        hcibuf[7] = 0xFF;
-        hcibuf[8] = 0x1F;
-        hcibuf[9] = 0xFF;
-        hcibuf[10] = 0x00;
+        hcioutbuf[0] = 0x01; // HCI OCF = 01
+        hcioutbuf[1] = 0x03 << 2; // HCI OGF = 3
+        hcioutbuf[2] = 0x08;
+        hcioutbuf[3] = 0xFF;
+        hcioutbuf[4] = 0xFF;
+        hcioutbuf[5] = 0xFF;
+        hcioutbuf[6] = 0xFF;
+        hcioutbuf[7] = 0xFF;
+        hcioutbuf[8] = 0x1F;
+        hcioutbuf[9] = 0xFF;
+        hcioutbuf[10] = 0x00;
 
-        HCI_Command(hcibuf, 11);
+        HCI_Command(hcioutbuf, 11);
 }
 
 void BTDSSP::hci_write_simple_pairing_mode() {
-        hcibuf[0] = 0x56; // HCI OCF = 56
-        hcibuf[1] = 0x03 << 2; // HCI OGF = 3
-        hcibuf[2] = 0x01; // parameter length = 1
-        hcibuf[3] = 0x01; // enable = 1
-//        hcibuf[3] = enable ? 0x00 : 0x01; // 0x00=OFF 0x01=ON
+        hcioutbuf[0] = 0x56; // HCI OCF = 56
+        hcioutbuf[1] = 0x03 << 2; // HCI OGF = 3
+        hcioutbuf[2] = 0x01; // parameter length = 1
+        hcioutbuf[3] = 0x01; // enable = 1
+//        hcioutbuf[3] = enable ? 0x00 : 0x01; // 0x00=OFF 0x01=ON
 
-        HCI_Command(hcibuf, 4);
+        HCI_Command(hcioutbuf, 4);
 }
 
 void BTDSSP::hci_authentication_requested(uint16_t handle) {
-    hcibuf[0] = 0x11; // HCI OCF = 11
-    hcibuf[1] = 0x01 << 2; // HCI OGF = 1
-    hcibuf[2] = 0x02; // Parameter Length = 2
-    hcibuf[3] = (uint8_t)(handle & 0xFF);//connection handle - low byte
-    hcibuf[4] = (uint8_t)((handle >> 8) & 0x0F);//connection handle - high byte
+    hcioutbuf[0] = 0x11; // HCI OCF = 11
+    hcioutbuf[1] = 0x01 << 2; // HCI OGF = 1
+    hcioutbuf[2] = 0x02; // Parameter Length = 2
+    hcioutbuf[3] = (uint8_t)(handle & 0xFF);//connection handle - low byte
+    hcioutbuf[4] = (uint8_t)((handle >> 8) & 0x0F);//connection handle - high byte
     
-    HCI_Command(hcibuf, 5);
+    HCI_Command(hcioutbuf, 5);
 }
 
 
 
 void BTDSSP::hci_link_key_request_reply() {
-        hcibuf[0] = 0x0B; // HCI OCF = 0B
-        hcibuf[1] = 0x01 << 2; // HCI OGF = 1
-        hcibuf[2] = 0x16; // parameter length 22
-        for(uint8_t i = 0; i < 6; i++) hcibuf[i + 3] = disc_bdaddr[i]; // 6 octet bdaddr
+        hcioutbuf[0] = 0x0B; // HCI OCF = 0B
+        hcioutbuf[1] = 0x01 << 2; // HCI OGF = 1
+        hcioutbuf[2] = 0x16; // parameter length 22
+        for(uint8_t i = 0; i < 6; i++) hcioutbuf[i + 3] = disc_bdaddr[i]; // 6 octet bdaddr
 //        hcibuf[3] = disc_bdaddr[0]; // 6 octet bdaddr
 //        hcibuf[4] = disc_bdaddr[1];
 //        hcibuf[5] = disc_bdaddr[2];
 //        hcibuf[6] = disc_bdaddr[3];
 //        hcibuf[7] = disc_bdaddr[4];
 //        hcibuf[8] = disc_bdaddr[5];
-        for(uint8_t i = 0; i < 16; i++) hcibuf[i + 9] = link_key[i]; // 16 octet link_key
+        for(uint8_t i = 0; i < 16; i++) hcioutbuf[i + 9] = link_key[i]; // 16 octet link_key
 //        hcibuf[9] = link_key[0]; // 16 octet link_key
 //        hcibuf[10] = link_key[1];
 //        hcibuf[11] = link_key[2];
@@ -1452,15 +1533,15 @@ void BTDSSP::hci_link_key_request_reply() {
 //        hcibuf[23] = link_key[14];
 //        hcibuf[24] = link_key[15];
 
-        HCI_Command(hcibuf, 25);
+        HCI_Command(hcioutbuf, 25);
 }
 
 
 void BTDSSP::hci_link_key_request_negative_reply() {
-        hcibuf[0] = 0x0C; // HCI OCF = 0C
-        hcibuf[1] = 0x01 << 2; // HCI OGF = 1
-        hcibuf[2] = 0x06; // parameter length 6
-        for(uint8_t i = 0; i < 6; i++) hcibuf[i + 3] = disc_bdaddr[i]; // 6 octet bdaddr
+        hcioutbuf[0] = 0x0C; // HCI OCF = 0C
+        hcioutbuf[1] = 0x01 << 2; // HCI OGF = 1
+        hcioutbuf[2] = 0x06; // parameter length 6
+        for(uint8_t i = 0; i < 6; i++) hcioutbuf[i + 3] = disc_bdaddr[i]; // 6 octet bdaddr
 //        hcibuf[3] = disc_bdaddr[0]; // 6 octet bdaddr
 //        hcibuf[4] = disc_bdaddr[1];
 //        hcibuf[5] = disc_bdaddr[2];
@@ -1468,33 +1549,33 @@ void BTDSSP::hci_link_key_request_negative_reply() {
 //        hcibuf[7] = disc_bdaddr[4];
 //        hcibuf[8] = disc_bdaddr[5];
 
-        HCI_Command(hcibuf, 9);
+        HCI_Command(hcioutbuf, 9);
 }
 
 
 void BTDSSP::hci_io_capability_request_reply() {
-        hcibuf[0] = 0x2B; // HCI OCF = 2B
-        hcibuf[1] = 0x01 << 2; // HCI OGF = 1
-        hcibuf[2] = 0x09;
-        for(uint8_t i = 0; i < 6; i++) hcibuf[i + 3] = disc_bdaddr[i]; // 6 octet bdaddr
+        hcioutbuf[0] = 0x2B; // HCI OCF = 2B
+        hcioutbuf[1] = 0x01 << 2; // HCI OGF = 1
+        hcioutbuf[2] = 0x09;
+        for(uint8_t i = 0; i < 6; i++) hcioutbuf[i + 3] = disc_bdaddr[i]; // 6 octet bdaddr
 //        hcibuf[3] = disc_bdaddr[0]; // 6 octet bdaddr
 //        hcibuf[4] = disc_bdaddr[1];
 //        hcibuf[5] = disc_bdaddr[2];
 //        hcibuf[6] = disc_bdaddr[3];
 //        hcibuf[7] = disc_bdaddr[4];
 //        hcibuf[8] = disc_bdaddr[5];
-        hcibuf[9] = 0x03; // NoInputNoOutput
-        hcibuf[10] = 0x00;
-        hcibuf[11] = 0x00;
+        hcioutbuf[9] = 0x03; // NoInputNoOutput
+        hcioutbuf[10] = 0x00;
+        hcioutbuf[11] = 0x00;
 
-        HCI_Command(hcibuf, 12);
+        HCI_Command(hcioutbuf, 12);
 }
 
 void BTDSSP::hci_user_confirmation_request_reply() {
-    hcibuf[0] = 0x2C; // HCI OCF = 2C
-    hcibuf[1] = 0x01 << 2; // HCI OGF = 1
-    hcibuf[2] = 0x06; // Parameter Length = 6
-        for(uint8_t i = 0; i < 6; i++) hcibuf[i + 3] = disc_bdaddr[i]; // 6 octet bdaddr
+    hcioutbuf[0] = 0x2C; // HCI OCF = 2C
+    hcioutbuf[1] = 0x01 << 2; // HCI OGF = 1
+    hcioutbuf[2] = 0x06; // Parameter Length = 6
+        for(uint8_t i = 0; i < 6; i++) hcioutbuf[i + 3] = disc_bdaddr[i]; // 6 octet bdaddr
 //        hcibuf[3] = disc_bdaddr[0]; // 6 octet bdaddr
 //        hcibuf[4] = disc_bdaddr[1];
 //        hcibuf[5] = disc_bdaddr[2];
@@ -1502,40 +1583,40 @@ void BTDSSP::hci_user_confirmation_request_reply() {
 //        hcibuf[7] = disc_bdaddr[4];
 //        hcibuf[8] = disc_bdaddr[5];
     
-    HCI_Command(hcibuf, 9);
+    HCI_Command(hcioutbuf, 9);
 }
 
 void BTDSSP::hci_set_connection_encryption(uint16_t handle) {
-    hcibuf[0] = 0x13; // HCI OCF = 13
-    hcibuf[1] = 0x01 << 2; // HCI OGF = 1
-    hcibuf[2] = 0x03; // Parameter Length = 9
-    hcibuf[3] = (uint8_t)(handle & 0xFF); //Connection_Handle - low byte
-    hcibuf[4] = (uint8_t)((handle >> 8) & 0x0F); //Connection_Handle - high byte
-    hcibuf[5] = 0x01; // 0x00=OFF 0x01=ON 
+    hcioutbuf[0] = 0x13; // HCI OCF = 13
+    hcioutbuf[1] = 0x01 << 2; // HCI OGF = 1
+    hcioutbuf[2] = 0x03; // Parameter Length = 9
+    hcioutbuf[3] = (uint8_t)(handle & 0xFF); //Connection_Handle - low byte
+    hcioutbuf[4] = (uint8_t)((handle >> 8) & 0x0F); //Connection_Handle - high byte
+    hcioutbuf[5] = 0x01; // 0x00=OFF 0x01=ON 
     
-    HCI_Command(hcibuf, 6);
+    HCI_Command(hcioutbuf, 6);
 }
 
 void BTDSSP::hci_inquiry() {
         hci_clear_flag(HCI_FLAG_HID_DEVICE_FOUND);
-        hcibuf[0] = 0x01;
-        hcibuf[1] = 0x01 << 2; // HCI OGF = 1
-        hcibuf[2] = 0x05; // Parameter Total Length = 5
-        hcibuf[3] = 0x33; // LAP: Genera/Unlimited Inquiry Access Code (GIAC = 0x9E8B33) - see https://www.bluetooth.org/Technical/AssignedNumbers/baseband.htm
-        hcibuf[4] = 0x8B;
-        hcibuf[5] = 0x9E;
-        hcibuf[6] = 0x30; // Inquiry time = 61.44 sec (maximum)
-        hcibuf[7] = 0x0A; // 10 number of responses
+        hcioutbuf[0] = 0x01;
+        hcioutbuf[1] = 0x01 << 2; // HCI OGF = 1
+        hcioutbuf[2] = 0x05; // Parameter Total Length = 5
+        hcioutbuf[3] = 0x33; // LAP: Genera/Unlimited Inquiry Access Code (GIAC = 0x9E8B33) - see https://www.bluetooth.org/Technical/AssignedNumbers/baseband.htm
+        hcioutbuf[4] = 0x8B;
+        hcioutbuf[5] = 0x9E;
+        hcioutbuf[6] = 0x30; // Inquiry time = 61.44 sec (maximum)
+        hcioutbuf[7] = 0x0A; // 10 number of responses
 
-        HCI_Command(hcibuf, 8);
+        HCI_Command(hcioutbuf, 8);
 }
 
 void BTDSSP::hci_inquiry_cancel() {
-        hcibuf[0] = 0x02;
-        hcibuf[1] = 0x01 << 2; // HCI OGF = 1
-        hcibuf[2] = 0x00; // Parameter Total Length = 0
+        hcioutbuf[0] = 0x02;
+        hcioutbuf[1] = 0x01 << 2; // HCI OGF = 1
+        hcioutbuf[2] = 0x00; // Parameter Total Length = 0
 
-        HCI_Command(hcibuf, 3);
+        HCI_Command(hcioutbuf, 3);
 }
 
 void BTDSSP::hci_connect() {
@@ -1545,49 +1626,49 @@ void BTDSSP::hci_connect() {
 void BTDSSP::hci_connect(uint8_t *bdaddr) {
         hci_clear_flag(HCI_FLAG_CONNECT_COMPLETE | HCI_FLAG_CONNECT_EVENT);
 
-        hcibuf[0] = 0x05; // HCI_Create_Connection
-        hcibuf[1] = 0x01 << 2; // HCI OGF = 1
-        hcibuf[2] = 0x0D; // parameter Total Length = 13
-        for(uint8_t i = 0; i < 6; i++) hcibuf[i + 3] = bdaddr[i]; // 6 octet bdaddr
+        hcioutbuf[0] = 0x05; // HCI_Create_Connection
+        hcioutbuf[1] = 0x01 << 2; // HCI OGF = 1
+        hcioutbuf[2] = 0x0D; // parameter Total Length = 13
+        for(uint8_t i = 0; i < 6; i++) hcioutbuf[i + 3] = bdaddr[i]; // 6 octet bdaddr
 //        hcibuf[3] = bdaddr[0]; // 6 octet bdaddr
 //        hcibuf[4] = bdaddr[1];
 //        hcibuf[5] = bdaddr[2];
 //        hcibuf[6] = bdaddr[3];
 //        hcibuf[7] = bdaddr[4];
 //        hcibuf[8] = bdaddr[5];
-        hcibuf[9] = 0x18; // DM1 or DH1 may be used
-        hcibuf[10] = 0xCC; // DM3, DH3, DM5, DH5 may be used
-        hcibuf[11] = 0x01; // Page repetition mode R1
-        hcibuf[12] = 0x00; // Reserved
-        hcibuf[13] = 0x00; // Clock offset
-        hcibuf[14] = 0x00; // Invalid clock offset
-        hcibuf[15] = 0x00; // Do not allow role switch
+        hcioutbuf[9] = 0x18; // DM1 or DH1 may be used
+        hcioutbuf[10] = 0xCC; // DM3, DH3, DM5, DH5 may be used
+        hcioutbuf[11] = 0x01; // Page repetition mode R1
+        hcioutbuf[12] = 0x00; // Reserved
+        hcioutbuf[13] = 0x00; // Clock offset
+        hcioutbuf[14] = 0x00; // Invalid clock offset
+        hcioutbuf[15] = 0x00; // Do not allow role switch
 
-        HCI_Command(hcibuf, 16);
+        HCI_Command(hcioutbuf, 16);
 }
 
 
 void BTDSSP::hci_disconnect(uint16_t handle) { // This is called by the different services
         hci_clear_flag(HCI_FLAG_DISCONNECT_COMPLETE);
-        hcibuf[0] = 0x06; // HCI OCF = 6
-        hcibuf[1] = 0x01 << 2; // HCI OGF = 1
-        hcibuf[2] = 0x03; // parameter length = 3
-        hcibuf[3] = (uint8_t)(handle & 0xFF); //connection handle - low byte
-        hcibuf[4] = (uint8_t)((handle >> 8) & 0x0F); //connection handle - high byte
-        hcibuf[5] = 0x13; // reason
+        hcioutbuf[0] = 0x06; // HCI OCF = 6
+        hcioutbuf[1] = 0x01 << 2; // HCI OGF = 1
+        hcioutbuf[2] = 0x03; // parameter length = 3
+        hcioutbuf[3] = (uint8_t)(handle & 0xFF); //connection handle - low byte
+        hcioutbuf[4] = (uint8_t)((handle >> 8) & 0x0F); //connection handle - high byte
+        hcioutbuf[5] = 0x13; // reason
 
-        HCI_Command(hcibuf, 6);
+        HCI_Command(hcioutbuf, 6);
 }
 
 void BTDSSP::hci_write_class_of_device() { // See http://bluetooth-pentest.narod.ru/software/bluetooth_class_of_device-service_generator.html
-        hcibuf[0] = 0x24; // HCI OCF = 24
-        hcibuf[1] = 0x03 << 2; // HCI OGF = 3
-        hcibuf[2] = 0x03; // parameter length = 3
-        hcibuf[3] = 0x04; // Robot
-        hcibuf[4] = 0x08; // Toy
-        hcibuf[5] = 0x00;
+        hcioutbuf[0] = 0x24; // HCI OCF = 24
+        hcioutbuf[1] = 0x03 << 2; // HCI OGF = 3
+        hcioutbuf[2] = 0x03; // parameter length = 3
+        hcioutbuf[3] = 0x04; // Robot // Minor Device Class
+        hcioutbuf[4] = 0x08; // Toy   // Major Device Class
+        hcioutbuf[5] = 0x00;          // Major Service Class
 
-        HCI_Command(hcibuf, 6);
+        HCI_Command(hcioutbuf, 6);
 }
 /*******************************************************************
  *                                                                 *
