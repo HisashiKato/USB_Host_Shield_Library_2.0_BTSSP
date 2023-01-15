@@ -23,6 +23,11 @@
 
 #include "Usb.h"
 
+enum XB1S_FirmwareVerEnum {
+        FW_31, // Xbox One S Wireless (MODEL 1708 3.1.1221.0 via Bluetooth)
+        FW_48  // Xbox One S Wireless (MODEL 1708 4.8.1923.0 via Bluetooth)
+};
+
 
 enum XB1S_JoystickEnum {
         STICK_LX, //X_Axis     // left_stick_x
@@ -65,7 +70,7 @@ enum XB1S_ButtonEnum {
  };
 
 
-const uint32_t XB1SBTBUTTONMASK[] PROGMEM = {
+const uint32_t XB1SBTBUTTONMASK48[] PROGMEM = {
         /* Xbox One S Wireless (MODEL 1708 4.8.1923.0 via Bluetooth) */
                       //buf 14 15 16
         0x000001, // A    //01 00 00
@@ -86,8 +91,30 @@ const uint32_t XB1SBTBUTTONMASK[] PROGMEM = {
 };
 
 
-union XB1SBTButtons {
-        /* Xbox One S Wireless (MODEL 1708 4.8.1923.0 via Bluetooth) */
+const uint32_t XB1SBTBUTTONMASK31[] PROGMEM = {
+        /* Xbox One S Wireless (MODEL 1708 3.1.1221.0 via Bluetooth) */
+                    //buf 14 15
+        0x0001, // A    //01 00
+        0x0002, // B    //02 00
+        0x0004, // X    //04 00
+        0x0008, // Y    //08 00
+
+        0x0010, // LB   //10 00
+        0x0020, // RB   //20 00
+
+        0x0040, // VIEW //40 00
+        0x0080, // MENU //80 00
+
+        0x0100, // LS   //00 01
+        0x0200, // RS   //00 02
+
+        0x1000  // XBOX
+};
+
+
+/*
+union XB1SBTButtons48 {
+        // Xbox One S Wireless (MODEL 1708 4.8.1923.0 via Bluetooth)
         struct {
                 // buf 14
                 uint8_t a : 1;
@@ -117,13 +144,56 @@ union XB1SBTButtons {
 } __attribute__((packed));
 
 
+union XB1SBTButtons31 {
+        // Xbox One S Wireless (MODEL 1708 3.1.1221.0 via Bluetooth)
+        struct {
+                // buf 14
+                uint8_t a : 1;
+                uint8_t b : 1;
+                uint8_t x : 1;
+                uint8_t y : 1;
+                uint8_t lb : 1;
+                uint8_t rb : 1;
+                uint8_t menu : 1;
+                uint8_t view : 1;
+
+                // buf 15
+                uint8_t ls : 1;
+                uint8_t rs : 1;
+                uint8_t dummy_1 : 6;
+
+                uint8_t dummy_2 : 8;
+
+        } __attribute__((packed));
+
+        uint32_t value : 24;
+
+} __attribute__((packed));
+*/
+
+
+union XB1SBTButtons {
+        uint8_t btndata[3]; 
+        uint32_t value : 24;
+} __attribute__((packed));
+
+
+
 struct XB1SBTReceivedData {
-        /* Xbox One S Wireless (MODEL 1708 4.8.1923.0 via Bluetooth) */
+        // Xbox One S Wireless (MODEL 1708 4.8.1923.0 via Bluetooth)
         uint16_t joystick[4]; // buf  1 -  8
         uint16_t trigger[2];  // buf  9 - 12
         uint8_t dpad;         // buf 13
-        XB1SBTButtons btn;    // buf 14 - 16 
+        XB1SBTButtons btn;    // buf 14 - 16
+/*
+        union {
+                XB1SBTButtons btn;    // buf 14 - 16
+                XB1SBTButtons48 btn48;  // buf 14 - 16 //(MODEL 1708 4.8.1923.0 via Bluetooth)
+                XB1SBTButtons31 btn31;  // buf 14 - 15 //(MODEL 1708 3.1.1221.0 via Bluetooth)
+        }                
+*/
 } __attribute__((packed));
+
 
 
 /*
@@ -216,8 +286,10 @@ protected:
 
 
 private:
+        int controllerFW;
         XB1SBTReceivedData xb1sbtReceivedData;
         XB1SBTButtons oldButtonState, buttonClickState;
+        uint32_t buttonMask;
         uint8_t pressedDpad;
         XB1SBTBatteryStatus xb1sbtBatteryStatus;
 };

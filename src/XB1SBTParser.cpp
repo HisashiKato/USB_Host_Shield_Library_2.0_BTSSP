@@ -51,13 +51,22 @@ bool XB1SBTParser::dpadClick(XB1S_DpadEnum a) {
 
 
 bool XB1SBTParser::buttonData(XB1S_ButtonEnum b) {
-        return xb1sbtReceivedData.btn.value & pgm_read_dword(&XB1SBTBUTTONMASK[(uint8_t)b]);
+        if (controllerFW == FW_31) 
+                buttonMask = pgm_read_dword(&XB1SBTBUTTONMASK31[(uint8_t)b]);
+        else 
+                buttonMask = pgm_read_dword(&XB1SBTBUTTONMASK48[(uint8_t)b]);
+
+        return (xb1sbtReceivedData.btn.value & buttonMask);
 }
 
 bool XB1SBTParser::buttonClick(XB1S_ButtonEnum b) {
-        uint32_t mask = pgm_read_dword(&XB1SBTBUTTONMASK[(uint8_t)b]);
-        bool click = buttonClickState.value & mask;
-        buttonClickState.value &= ~mask; // Clear "click" event
+        if (controllerFW == FW_31) 
+                buttonMask = pgm_read_dword(&XB1SBTBUTTONMASK31[(uint8_t)b]);
+        else 
+                buttonMask = pgm_read_dword(&XB1SBTBUTTONMASK48[(uint8_t)b]);
+
+        bool click = buttonClickState.value & buttonMask;
+        buttonClickState.value &= ~buttonMask; // Clear "click" event
         return click;
 }
 
@@ -83,19 +92,30 @@ void XB1SBTParser::Parse(uint8_t len, uint8_t *buf) {
                 if (buf[0] == 0x01) { // Check report ID
                         memcpy(&xb1sbtReceivedData, buf + 1, min((uint8_t)(len - 1), MFK_CASTUINT8T sizeof(xb1sbtReceivedData)));
 
+                        if (len == 16) {
+                                controllerFW = FW_31;
+                        } else {
+                                controllerFW = FW_48;
+                        }
+
                         if (xb1sbtReceivedData.btn.value != oldButtonState.value) { // Check if anything button has changed
                                 buttonClickState.value = xb1sbtReceivedData.btn.value & ~oldButtonState.value; // Update click state variable
                                 oldButtonState.value = xb1sbtReceivedData.btn.value;
                         }
+
                         //dpadcheck
                         if (xb1sbtReceivedData.dpad == (uint8_t)XB1S_DpadEnum::DPAD_NOT_PRESSED) {
                                 pressedDpad = (uint8_t)XB1S_DpadEnum::DPAD_NOT_PRESSED;
                         }
 
                 } else if (buf[0] == 0x02) { // This report contains the Xbox button
-                        /*
-                          My equipment does not receive this data for some reason. ???
-                        */
+                        if (buf[1] == 0x01) {
+                                xb1sbtReceivedData.btn.value |= pgm_read_dword(&XB1SBTBUTTONMASK31[XB1S_ButtonEnum::XBOX]);
+                        } else {
+                                xb1sbtReceivedData.btn.value &= ~pgm_read_dword(&XB1SBTBUTTONMASK31[XB1S_ButtonEnum::XBOX]);
+                        }
+                                buttonClickState.value = xb1sbtReceivedData.btn.value;
+                                oldButtonState.value = xb1sbtReceivedData.btn.value;
                         return;
 
                 } else if (buf[0] == 0x04) { // Battery status
