@@ -69,11 +69,11 @@ USB Host Library Rev.2.0 BTSSPは、Arduino IDEで使用できます。
 
 本家の USB Host Library Rev.2.0 では今のところ出来ないSSPのリンクキーの保存が出来るので、再接続等が確実になっています。
 
-元のライブラリを改造して、ここで最初に公開していたライブラリ内の、Bluetoothに関係する関数では、その関数の内部でArduinoのEEPROMライブラリを使用して、リンクキー等の保存の処理をしていましたが、そのBluetoothの関数の内部にあったリンクキー等の保存の処理を、関数から外に出して、ユーザースケッチ側で処理をするように変更したので、EEPROMライブラリが使えないArduino互換ボードでもスケッチを工夫して、どこかの不揮発性メモリにリンクキー等を保存する仕組みを用意することが出来れば、SSPでの接続が行えるようになると思います。
+元のライブラリを改造して、ここで最初に公開していたライブラリ内の、Bluetoothに関係する関数では、その関数の内部でArduinoのEEPROMライブラリを使用して、リンクキー等の保存の処理をしていましたが、そのBluetoothの関数の内部にあったリンクキー等の保存の処理を、関数から外に出して、ユーザースケッチ側で処理をするように変更しました。なので、EEPROMライブラリが使えないArduino互換ボードでもスケッチを工夫して、どこかの不揮発性メモリにリンクキー等を保存する仕組みを用意することが出来れば、SSPでの接続が行えるようになると思います。
 
-このライブラリは、BluetoothのSSP(Secure Simple Pairing)接続にだけ対応しています。Arduino Uno (ATmega328P) のようなメモリが貧弱なボードでも動かせるように、バイナリの容量を極力減らしたいと思って、従来のPS3コントローラー,Wiiリモコン等との接続や、旧来のPINコードを用いた接続は外しました。SDP(Service Discovery Protocol)も未実装です(ぶっちゃけSDPは今のところ無しでも動く)。USB有線での接続にも対応していません。それらは元の USB Host Library Rev.2.0 を使用してください。
+このライブラリは、BluetoothのSSP(Secure Simple Pairing)接続にだけ対応しています。Arduino Uno (ATmega328P) のようなメモリが貧弱なボードでも動かせるように、バイナリの容量を極力減らしたいと思って、従来のPS3コントローラー,Wiiリモコン等との接続や、旧来のPINコードを用いた接続は外しました。SDP(Service Discovery Protocol)も未実装です(SDPは今のところ無しでも動く)。USB有線での接続にも対応していません。それらは元の USB Host Library Rev.2.0 を使用してください。
 
-Bluetooth Classic のみです。 Bluetooth Low Energy (BLE) には対応していません。（本家の USB Host Library Rev.2.0 も BLE は未実装です） 
+Bluetooth Classic のみです。 Bluetooth Low Energy (BLE) には対応していません。（元の USB Host Library Rev.2.0 も BLE は未実装です） 
 
 ※注意：元のライブラリ "USB Host Library Rev.2.0" を使用するときは、このライブラリを削除（USB_Host_Shield_Library_2.0_BTSSP-masterのフォルダを消去）してください。重複して、衝突します。（衝突しました。）逆に、このライブラリを使用するときは、本家のライブラリを削除してください。めんどくさいですが。
    
