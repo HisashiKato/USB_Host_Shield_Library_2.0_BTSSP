@@ -14,7 +14,7 @@
  Web      :  http://www.tkjelectronics.com
  e-mail   :  kristianl@tkjelectronics.com
  
- Modified 4 Apr 2021 by HisashiKato
+ Modified 25 Feb 2023 by HisashiKato
  Web      :  http://kato-h.cocolog-nifty.com/khweblog/
 */
 
@@ -134,6 +134,13 @@ void SWProBTParser::Parse(uint8_t len, uint8_t *buf) {
 #endif
                         return;
                 }
+                
+                // We need to send the rumble report repeatedly to keep it on
+                // See: https://github.com/felis/USB_Host_Shield_2.0/blob/master/SwitchProParser.cpp#L110-L116
+                if ((rumbleL || rumbleR) && ((millis() - rumbleOnTime) > 1000 )){
+                        sendConfigData(&swprobtSendConfigData); 
+                        rumbleOnTime = millis();
+                }
         }
 }
 
@@ -212,6 +219,10 @@ void SWProBTParser::setSimpleRumble() {
 
         if ((oldRumbleL != rumbleL)||(oldRumbleR != rumbleR)) {
                 sendConfigData(&swprobtSendConfigData);
+
+                if (rumbleL || rumbleR) {
+                        rumbleOnTime = millis();
+                }
                 oldRumbleL = rumbleL;
                 oldRumbleR = rumbleR;
         }
@@ -229,5 +240,6 @@ void SWProBTParser::Reset() {
         swprobtReceivedData.dpad = (uint8_t)SWPro_DpadEnum::DPAD_NOT_PRESSED;
         pressedDpad = (uint8_t)SWPro_DpadEnum::DPAD_NOT_PRESSED;
         swprobtReceivedData.btn.value = 0;
+        rumbleOnTime = 0;
 }
 

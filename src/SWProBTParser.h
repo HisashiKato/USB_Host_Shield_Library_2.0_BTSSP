@@ -14,7 +14,7 @@
  Web      :  http://www.tkjelectronics.com
  e-mail   :  kristianl@tkjelectronics.com
  
- Modified 4 Apr 2021 by HisashiKato
+ Modified 25 Feb 2023 by HisashiKato
  Web      :  http://kato-h.cocolog-nifty.com/khweblog/
 */
 
@@ -226,6 +226,7 @@ private:
 
         void setReportMode(uint8_t mode);
         void setEnableRumble(uint8_t mode);
+        uint32_t rumbleOnTime;
 
         void setPlayerLED(uint8_t led);
         void setSimpleRumble();
