@@ -34,10 +34,7 @@ USB_Host_Shield_2.0 リポジトリ
 USB_Host_Shield_Library_2.0_BTSSP リポジトリ  
 <https://github.com/HisashiKato/USB_Host_Shield_Library_2.0_BTSSP>  
 
-そして、このライブラリを元に、更に改造したライブラリを作り始めました。
 
-USB_Host_Shield_Library_2.0_BTSSP_b リポジトリ  
-<https://github.com/HisashiKato/USB_Host_Shield_Library_2.0_BTSSP_b>
 　  
 
 ## ハードウェア
@@ -100,7 +97,7 @@ https://support.xbox.com/en-US/help/hardware-network/accessories/controller-firm
 
 しかし、4.8.1923.0 に戻す方法は見つかりませんでした。
 
-そこで、3.1.1221.0 のボタンの読み取りを追加しました。3.1.1221.0 では動作チェックをしましたが、4.8.1923.0 はファームフェアを戻せないため動作チェックをしていません。
+そこで、3.1.1221.0 のボタンの読み取りを追加しました。3.1.1221.0 では動作チェックをしましたが、4.8.1923.0 はコントローラーのファームフェアを戻す方法が分からず、動作チェックをしていません。
 
 ### Nintendo Switch Pro コントローラー
 
